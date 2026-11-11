@@ -80,7 +80,7 @@ test("keeps the theme button before the resume link without overflow", async ({
     await expect(toggle).toBeVisible();
     const toggleBox = (await toggle.boundingBox())!;
     const resumeBox = (await page.locator(".nav-resume").boundingBox())!;
-    expect(toggleBox.width).toBeGreaterThanOrEqual(44);
+    expect(toggleBox.width).toBeGreaterThanOrEqual(36);
     expect(toggleBox.x + toggleBox.width).toBeLessThanOrEqual(resumeBox.x);
     expect(resumeBox.x + resumeBox.width).toBeLessThanOrEqual(width);
     expect(

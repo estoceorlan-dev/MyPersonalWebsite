@@ -255,7 +255,7 @@ textarea {
   display: flex;
   align-items: center;
   min-height: 44px;
-  font-size: 10px;
+  font-size: 13px;
   color: #67666f;
 }
 .desktop-nav a:hover,
@@ -2615,7 +2615,7 @@ textarea {
 }
 /* Reading text stays comfortably sized while small labels keep the editorial hierarchy. */
 .desktop-nav a {
-  font-size: 11px;
+  font-size: 13px;
 }
 .button {
   font-size: 12px;

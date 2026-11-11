@@ -13,8 +13,8 @@ export function ThemeToggle() {
       aria-label={label}
       title={label}
     >
-      <Sun className="theme-sun" size={20} aria-hidden="true" />
-      <Moon className="theme-moon" size={20} aria-hidden="true" />
+      <Sun className="theme-sun" size={17} aria-hidden="true" />
+      <Moon className="theme-moon" size={17} aria-hidden="true" />
     </button>
   );
 }

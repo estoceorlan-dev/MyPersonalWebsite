@@ -14,8 +14,8 @@
 /* Both icons share a center so rotation and scale feel like one motion. */
 .theme-toggle.icon-button {
   position: relative;
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 38px;
   overflow: hidden;
   color: var(--accent);
   border-color: var(--line);
@@ -325,8 +325,12 @@
   color: #e4cc85;
 }
 
-/* Keep the download label and a full-size theme target on narrow screens. */
+/* Keep the download label and a compact theme target on narrow screens. */
 @media (max-width: 767px) {
+  .theme-toggle.icon-button {
+    width: 36px;
+    height: 36px;
+  }
   .site-header .nav-inner {
     gap: 12px;
   }
