@@ -1,1 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="16" fill="#5d5b99"/><text x="7" y="43" font-family="Arial,sans-serif" font-size="31" font-weight="bold" letter-spacing="-2" fill="#fff">OE</text><circle cx="54" cy="43" r="3" fill="#d5f0d8"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="OE.">
+  <rect width="64" height="64" rx="14" fill="#faf9f6" />
+  <path
+    fill="#292a31"
+    fill-rule="evenodd"
+    d="M18.5 14.5C27.06 14.5 34 22.34 34 32C34 41.66 27.06 49.5 18.5 49.5C9.94 49.5 3 41.66 3 32C3 22.34 9.94 14.5 18.5 14.5ZM18.5 20.5C13.64 20.5 9.7 25.65 9.7 32C9.7 38.35 13.64 43.5 18.5 43.5C23.36 43.5 27.3 38.35 27.3 32C27.3 25.65 23.36 20.5 18.5 20.5Z"
+  />
+  <path
+    fill="#292a31"
+    d="M33.5 15H51.5V20.6H40V29.2H50V34.6H40V43.4H51.5V49H33.5V15Z"
+  />
+  <circle cx="57" cy="45.2" r="4" fill="#5d5b99" />
+</svg>
