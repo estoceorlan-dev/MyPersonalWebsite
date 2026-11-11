@@ -8,7 +8,7 @@ The supplied resume is the source for the name, contact information, degree, col
 
 The dates 2026–2027 are displayed as an academic year; no graduation date or year level is inferred. Eligibility is separate from course certifications. No LinkedIn URL, credential ID, verification URL, or certificate image was supplied.
 
-The public download at `public/resume.pdf` removes reference details as requested. Original resume files remain local and ignored by Git.
+The public download at `public/resume.pdf` is the supplied original, including reference contact details. The user requested their inclusion after confirming the reference had agreed. Original source files remain local and ignored by Git.
 
 ## Repository-backed projects
 

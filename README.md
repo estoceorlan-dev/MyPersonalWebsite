@@ -37,7 +37,7 @@ Tests use installed Google Chrome by default. Set `PLAYWRIGHT_CHANNEL=msedge` fo
 | `src/data/projects.ts`                         | Fourteen projects, technologies, features, categories, repository/demo links, and optional contribution, status, year, and scope notes. |
 | `src/data/experience.ts`                       | Education and the JCE Dry Goods Trading role.                                                                                           |
 | `src/data/certifications.ts`                   | Civil Service Professional Eligibility and future certifications or achievements.                                                       |
-| `public/resume.pdf`                            | Public resume copy with reference details removed.                                                                                      |
+| `public/resume.pdf`                            | Original resume, including reference contact details as requested.                                                                                      |
 | `public/favicon.svg`, `public/social-card.svg` | OE branding; run `npm run social-card` after editing the social graphic.                                                                |
 | `public/robots.txt`, `public/sitemap.xml`      | Search engine files for the custom domain.                                                                                              |
 
@@ -45,7 +45,7 @@ Six featured projects appear initially; the gallery expands to fourteen and filt
 
 Optional information still to add: a LinkedIn URL, actual project screenshots, contributions for projects not described in the resume, and additional verified certificates. Unprovided information is omitted from the page. For actual screenshots, put files in `public/projects/` and set each project's `image` and `imageAlt`. Current artwork is explicitly labeled illustrative or as a project cover.
 
-The portrait at `assets/images/Portrait.jpg` is the supplied original; crop/grayscale are CSS only. Original resume source files are ignored locally to avoid publishing reference details. See [CONTENT_SOURCES.md](CONTENT_SOURCES.md) for the sources and content decisions.
+The portrait at `assets/images/Portrait.jpg` is the supplied original; crop/grayscale are CSS only. Original source files remain ignored locally; the approved download at `public/resume.pdf` includes reference contact details. See [CONTENT_SOURCES.md](CONTENT_SOURCES.md) for the sources and content decisions.
 
 ## Contact behavior
 
