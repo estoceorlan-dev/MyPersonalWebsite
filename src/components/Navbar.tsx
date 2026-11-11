@@ -5,6 +5,7 @@ import { navigation, personal } from "../data/personal";
 import { useActiveSection } from "../hooks/useActiveSection";
 import { ResumeButton } from "./Shared";
 import { Modal } from "./Modal";
+import { ThemeToggle } from "./ThemeToggle";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -42,6 +43,7 @@ export default function Navbar() {
           ))}
         </nav>
         <div className="nav-actions">
+          <ThemeToggle />
           <ResumeButton className="button nav-resume" compact />
           <button
             className="icon-button menu-toggle"

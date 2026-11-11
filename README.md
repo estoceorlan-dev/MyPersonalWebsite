@@ -26,7 +26,7 @@ npm run test:production  # Build and test production output
 npm run social-card      # Regenerate the PNG from the social SVG
 ```
 
-Tests use installed Google Chrome by default. Set `PLAYWRIGHT_CHANNEL=msedge` for Edge; for CI, install Chrome with `npx playwright install chrome`. Checks cover responsive layout, navigation, gallery filtering/expansion, modal focus, resume downloads, email drafts, domain metadata, and automated WCAG A/AA checks. Screenshots and traces are ignored by Git.
+Tests use installed Google Chrome by default. Set `PLAYWRIGHT_CHANNEL=msedge` for Edge; for CI, install Chrome with `npx playwright install chrome`. Checks cover responsive layout, navigation, gallery filtering/expansion, modal focus, resume downloads, email drafts, domain metadata, theme preferences, and automated WCAG A/AA checks in both themes. Screenshots and traces are ignored by Git.
 
 ## Content management
 
@@ -37,7 +37,7 @@ Tests use installed Google Chrome by default. Set `PLAYWRIGHT_CHANNEL=msedge` fo
 | `src/data/projects.ts`                         | Fourteen projects, technologies, features, categories, repository/demo links, and optional contribution, status, year, and scope notes. |
 | `src/data/experience.ts`                       | Education and the JCE Dry Goods Trading role.                                                                                           |
 | `src/data/certifications.ts`                   | Civil Service Professional Eligibility and future certifications or achievements.                                                       |
-| `public/resume.pdf`                            | Original resume, including reference contact details as requested.                                                                                      |
+| `public/resume.pdf`                            | Original resume, including reference contact details as requested.                                                                      |
 | `public/favicon.svg`, `public/social-card.svg` | OE branding; run `npm run social-card` after editing the social graphic.                                                                |
 | `public/robots.txt`, `public/sitemap.xml`      | Search engine files for the custom domain.                                                                                              |
 
@@ -76,10 +76,13 @@ Keep `www.orlanestoce.online` assigned to this project in Vercel's domain settin
 
 - `src/components/`: reusable UI, dialogs, navigation, cards, and contact form.
 - `src/data/`: centralized editable content.
-- `src/hooks/`: active-section tracking.
+- `src/hooks/`: active-section tracking and theme preferences.
 - `src/sections/`: the portfolio sections.
 - `src/styles.css`: design tokens and responsive layouts.
+- `src/theme.css`: dark palette, animated sun/moon toggle, and compact header adjustments.
 - `scripts/`: social image generation and production test runner.
 - `tests/`: browser and accessibility checks.
 
 Dialogs support keyboard focus containment, Escape dismissal, and focus restoration. Motion respects reduced-motion preferences. Poppins loads with a local fallback.
+
+The theme toggle sits before the header's resume link. New visitors follow their system color preference; an explicit choice is saved under `portfolio-theme` in local storage and synchronized across tabs. The head script applies that preference before the page renders to prevent a light flash. Keep its storage key and theme colors aligned with `useTheme.ts` when editing them.

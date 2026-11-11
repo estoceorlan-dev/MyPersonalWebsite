@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./theme.css";
 
 @theme {
   --font-sans: "Poppins", sans-serif;
@@ -7,8 +8,8 @@
 
 :root {
   font-family: "Poppins", sans-serif;
-  color: #292a31;
-  background: #faf9f6;
+  color: var(--ink);
+  background: var(--paper);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;

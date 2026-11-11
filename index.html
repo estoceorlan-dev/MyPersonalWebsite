@@ -5,6 +5,24 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=oe" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#faf9f6" />
+    <script>
+      (() => {
+        let saved;
+        try {
+          saved = localStorage.getItem("portfolio-theme");
+        } catch {}
+        const theme =
+          saved === "light" || saved === "dark"
+            ? saved
+            : window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.style.colorScheme = theme;
+        document.querySelector('meta[name="theme-color"]').content =
+          theme === "dark" ? "#0b0d12" : "#faf9f6";
+      })();
+    </script>
     <title>__PORTFOLIO_TITLE__</title>
     <meta name="description" content="__PORTFOLIO_DESCRIPTION__" />
     <meta property="og:title" content="__PORTFOLIO_TITLE__" />

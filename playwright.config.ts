@@ -15,6 +15,7 @@ export default defineConfig({
     channel: process.env.PLAYWRIGHT_CHANNEL || "chrome",
     trace: "retain-on-failure",
     reducedMotion: "reduce",
+    colorScheme: "light",
   },
   projects: [
     { name: "desktop", use: { viewport: { width: 1440, height: 1000 } } },
