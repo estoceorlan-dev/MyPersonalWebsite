@@ -4,6 +4,7 @@ import { projects, projectCategories } from "../data/projects";
 import type { Project, ProjectCategory } from "../data/projects";
 import { Reveal, SectionHeading } from "../components/Shared";
 import ProjectCard from "../components/ProjectCard";
+import ProjectCarousel from "../components/ProjectCarousel";
 import ProjectVisual from "../components/ProjectVisual";
 import { Modal } from "../components/Modal";
 
@@ -120,7 +121,14 @@ export default function Projects() {
       >
         {selected && (
           <>
-            <ProjectVisual project={selected} />
+            {selected.gallery?.length ? (
+              <ProjectCarousel
+                images={selected.gallery}
+                title={selected.title}
+              />
+            ) : (
+              <ProjectVisual project={selected} />
+            )}
             <p className="eyebrow mt-6">{selected.category}</p>
             {(selected.year || selected.status) && (
               <p className="project-status">

@@ -1,12 +1,18 @@
 import { test, expect } from "@playwright/test";
 
-test("shows all 14 projects and links both versions of grouped repositories", async ({
+test("shows all 13 projects, links grouped repositories, and displays the Floréa Haven logo and UI carousel", async ({
   page,
 }) => {
   await page.goto("/#projects");
   await expect(page.locator(".project-card")).toHaveCount(6);
-  await page.getByRole("button", { name: "View all 14 projects" }).click();
-  await expect(page.locator(".project-card")).toHaveCount(14);
+  await expect(
+    page.getByRole("img", { name: "Floréa Haven logo" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "View all 13 projects" }).click();
+  await expect(page.locator(".project-card")).toHaveCount(13);
+  await expect(
+    page.getByRole("button", { name: "View JCE POS details" }),
+  ).toHaveCount(0);
   await page
     .getByRole("button", { name: "View Blue vs. Yellow details" })
     .click();
@@ -34,6 +40,18 @@ test("shows all 14 projects and links both versions of grouped repositories", as
     name: "Floréa Haven",
     exact: true,
   });
+  const carousel = florea.getByRole("region", {
+    name: "Floréa Haven interface screenshots",
+  });
+  await expect(carousel).toBeVisible();
+  await expect(carousel.locator(".carousel-count")).toHaveText("01 / 05");
+  await expect(carousel.locator(".carousel-label")).toHaveText("Home");
+  await florea.screenshot({ path: ".qa/florea-modal.png" });
+  await carousel.getByRole("button", { name: "Next screenshot" }).click();
+  await expect(carousel.locator(".carousel-count")).toHaveText("02 / 05");
+  await expect(carousel.locator(".carousel-label")).toHaveText(
+    "Product catalog",
+  );
   await expect(
     florea.getByRole("link", { name: "HTML / JavaScript version" }),
   ).toHaveAttribute(

@@ -12,14 +12,13 @@ The public download at `public/resume.pdf` is the supplied original, including r
 
 ## Repository-backed projects
 
-Fourteen project cards cover sixteen project repositories. Blue vs. Yellow groups its frontend and backend; Floréa Haven groups the React and plain HTML versions. JCE Management System and JCE POS are separate implementations. The portfolio repository itself is excluded.
+Thirteen project cards cover fifteen project repositories. Blue vs. Yellow groups its frontend and backend; Floréa Haven groups the React and plain HTML versions. The portfolio repository itself is excluded.
 
 - **VitalySync**: [README](https://github.com/estoceorlan-dev/VitalySync/blob/main/README.md).
 - **JCE Management System**: [README](https://github.com/estoceorlan-dev/JCE-Management-System/blob/main/README.md).
 - **Floréa Haven**: [README](https://github.com/estoceorlan-dev/Florea-Haven/blob/main/README.md), [HTML / JavaScript version](https://github.com/estoceorlan-dev/Florea-Haven-simple/blob/main/README.md).
 - **UniFind**: [README](https://github.com/estoceorlan-dev/UniFind/blob/main/README.md).
 - **Mango Classifier**: [README](https://github.com/estoceorlan-dev/Mango-Classifier/blob/main/README.md).
-- **JCE POS**: [README](https://github.com/estoceorlan-dev/jce-pos/blob/main/README.md).
 - **Leslie’s Restaurant**: [README](https://github.com/estoceorlan-dev/Leslie-s-Restaurant-Management-System/blob/main/README.md).
 - **Romel Hair Salon**: [README](https://github.com/estoceorlan-dev/Hair-Salon/blob/main/README.md).
 - **Roel’s Guitar Shop**: [README](https://github.com/estoceorlan-dev/Guitar-Shop/blob/main/README.md).

@@ -7,7 +7,7 @@ for (const theme of ["light", "dark"] as const) {
   }) => {
     await page.emulateMedia({ colorScheme: theme });
     await page.goto("/");
-    await page.getByRole("button", { name: "View all 14 projects" }).click();
+    await page.getByRole("button", { name: "View all 13 projects" }).click();
     await page.evaluate(() => document.fonts.ready);
     const scan = () =>
       new AxeBuilder({ page })
@@ -23,9 +23,11 @@ for (const theme of ["light", "dark"] as const) {
         })),
       })),
     ).toEqual([]);
-    await page.getByRole("button", { name: "View VitalySync details" }).click();
+    await page
+      .getByRole("button", { name: "View Floréa Haven details" })
+      .click();
     await expect(
-      page.getByRole("dialog", { name: "VitalySync", exact: true }),
+      page.getByRole("dialog", { name: "Floréa Haven", exact: true }),
     ).toBeVisible();
     const dialogResults = await scan();
     expect(

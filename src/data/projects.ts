@@ -8,6 +8,11 @@ export const projectCategories = [
   "Academic Projects",
 ] as const;
 export type ProjectCategory = (typeof projectCategories)[number];
+export type ProjectGalleryItem = {
+  src: string;
+  alt: string;
+  label?: string;
+};
 export type Project = {
   id: string;
   title: string;
@@ -31,8 +36,10 @@ export type Project = {
     tone: "lavender" | "sage" | "blue" | "sand" | "rose";
     label: string;
   };
+  assetFolder?: string;
   image?: string;
   imageAlt?: string;
+  gallery?: ProjectGalleryItem[];
   repository: string;
   additionalRepositories?: { label: string; url: string }[];
   demo: string;
@@ -42,8 +49,109 @@ export type Project = {
   status?: string;
   notes?: string[];
 };
+
+const projectAssetFiles = import.meta.glob<string>(
+  "../../assets/images/*/*.{png,jpg,jpeg,webp,avif,svg}",
+  { eager: true, import: "default" },
+);
+
+function normalizeKey(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
+function formatSlideLabel(fileName: string): string {
+  const withoutExt = fileName.replace(/\.[^.]+$/, "");
+  const cleaned = withoutExt
+    .replace(/^\d+[\s._-]*/, "")
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!cleaned) return "Interface view";
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+}
+
+function attachProjectAssets(items: Project[]): Project[] {
+  const byFolder = new Map<string, { fileName: string; url: string }[]>();
+  for (const [filePath, url] of Object.entries(projectAssetFiles)) {
+    const parts = filePath.split("/");
+    const fileName = parts[parts.length - 1];
+    const folderName = parts[parts.length - 2];
+    if (!folderName || !fileName) continue;
+    const key = normalizeKey(folderName);
+    const list = byFolder.get(key) ?? [];
+    list.push({ fileName, url });
+    byFolder.set(key, list);
+  }
+
+  return items.map((project) => {
+    const candidates = [project.assetFolder, project.title, project.id]
+      .filter((v): v is string => Boolean(v))
+      .map(normalizeKey);
+
+    let matchedFiles: { fileName: string; url: string }[] | undefined;
+    for (const key of candidates) {
+      matchedFiles = byFolder.get(key);
+      if (matchedFiles) break;
+    }
+    if (!matchedFiles) {
+      for (const [folderKey, files] of byFolder.entries()) {
+        if (
+          candidates.some(
+            (key) => folderKey.startsWith(key) || key.startsWith(folderKey),
+          )
+        ) {
+          matchedFiles = files;
+          break;
+        }
+      }
+    }
+    if (!matchedFiles?.length) return project;
+
+    const sorted = [...matchedFiles].sort((a, b) =>
+      a.fileName.localeCompare(b.fileName, undefined, {
+        numeric: true,
+        sensitivity: "base",
+      }),
+    );
+
+    const logoEntry = sorted.find(({ fileName }) =>
+      /(logo|cover)/i.test(fileName),
+    );
+    const galleryEntries = sorted.filter(
+      ({ fileName }) => !/(logo|cover)/i.test(fileName),
+    );
+
+    const image = project.image ?? logoEntry?.url;
+    const imageAlt =
+      project.imageAlt ?? (logoEntry ? `${project.title} logo` : undefined);
+    const gallery =
+      project.gallery ??
+      (galleryEntries.length
+        ? galleryEntries.map(({ fileName, url }) => {
+            const label = formatSlideLabel(fileName);
+            return {
+              src: url,
+              label,
+              alt: `${project.title} — ${label}`,
+            };
+          })
+        : undefined);
+
+    return {
+      ...project,
+      ...(image ? { image } : {}),
+      ...(imageAlt ? { imageAlt } : {}),
+      ...(gallery ? { gallery } : {}),
+    };
+  });
+}
+
 // Repository-backed project scope; only resume-confirmed contributions are attributed.
-export const projects: Project[] = [
+const rawProjects: Project[] = [
   {
     id: "vitalysync",
     title: "VitalySync",
@@ -169,32 +277,6 @@ export const projects: Project[] = [
     repository: "https://github.com/estoceorlan-dev/Mango-Classifier",
     demo: "",
     status: "Prototype",
-  },
-  {
-    id: "jce-pos",
-    title: "JCE POS",
-    category: "Business Systems",
-    categories: ["Business Systems", "Web Development"],
-    description:
-      "A separate React and TypeScript point-of-sale implementation for purchasing, checkout, returns, branch transfers, and reporting.",
-    technologies: ["React", "TypeScript", "Node.js", "Express", "PostgreSQL"],
-    features: [
-      "Inventory, purchasing, checkout, and receipts",
-      "Returns, register reconciliation, and local branch transfers",
-      "Filtered reports, dashboards, and operational administration",
-    ],
-    preview: "cover",
-    cover: {
-      icon: "receipt",
-      tone: "sand",
-      label: "RETAIL WORKFLOWS",
-    },
-    repository: "https://github.com/estoceorlan-dev/jce-pos",
-    demo: "",
-    status: "In development",
-    notes: [
-      "Desktop packaging and production acceptance are later milestones; the current implementation is served by a local branch server.",
-    ],
   },
   {
     id: "leslies-restaurant",
@@ -390,3 +472,5 @@ export const projects: Project[] = [
     status: "Demo",
   },
 ];
+
+export const projects: Project[] = attachProjectAssets(rawProjects);

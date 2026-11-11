@@ -33,7 +33,7 @@ export default function ProjectVisual({ project }: { project: Project }) {
   const CoverIcon = project.cover ? coverIcons[project.cover.icon] : Store;
   if (project.image)
     return (
-      <div className="project-visual">
+      <div className="project-visual project-visual-image">
         <img
           src={project.image}
           alt={project.imageAlt || `${project.title} project preview`}

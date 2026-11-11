@@ -87,10 +87,28 @@
     .credentials-placeholder,
     .eligibility-card,
     .empty-state,
-    .project-scope
+    .project-scope,
+    .project-carousel,
+    .carousel-bar
   ) {
   background: var(--surface-raised);
   border-color: var(--line);
+}
+:root[data-theme="dark"] .carousel-stage {
+  background: #141821;
+}
+:root[data-theme="dark"] .carousel-dot {
+  background: #46536a;
+}
+:root[data-theme="dark"] .carousel-dot:hover {
+  background: #6886ba;
+}
+:root[data-theme="dark"] .carousel-dot.is-active {
+  background: var(--accent);
+}
+:root[data-theme="dark"] .carousel-nav:hover {
+  background: var(--accent);
+  color: #0b1426;
 }
 :root[data-theme="dark"]
   :is(
