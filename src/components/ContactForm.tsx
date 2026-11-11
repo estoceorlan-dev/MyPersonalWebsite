@@ -2,17 +2,41 @@ import { useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { ArrowUpRight, Check, Copy } from "lucide-react";
 import { personal } from "../data/personal";
+import { useIsMobile } from "../hooks/useIsMobile";
+import { buildEmailComposeUrl } from "../utils/email";
 
 type Fields = { name: string; email: string; subject: string; message: string };
 const initial: Fields = { name: "", email: "", subject: "", message: "" };
 export default function ContactForm() {
+  const isMobile = useIsMobile();
   const [fields, setFields] = useState(initial);
   const [errors, setErrors] = useState<Partial<Fields>>({});
   const [draft, setDraft] = useState("");
-  const [emailLink, setEmailLink] = useState("");
-  const [feedback, setFeedback] = useState("");
+  const [composed, setComposed] = useState<{
+    subject: string;
+    body: string;
+  } | null>(null);
   const [copied, setCopied] = useState(false);
+  const [errorFeedback, setErrorFeedback] = useState("");
   const form = useRef<HTMLFormElement>(null);
+  const emailLink =
+    composed && personal.email
+      ? buildEmailComposeUrl({
+          to: personal.email,
+          subject: composed.subject,
+          body: composed.body,
+          isMobile,
+        })
+      : "";
+  const feedback = errorFeedback
+    ? errorFeedback
+    : draft
+      ? personal.email
+        ? isMobile
+          ? "Your email draft is ready. Open your email app to review and send it, or copy it below. This website has not sent a message."
+          : "Your email draft is ready. Open Gmail to review and send it, or copy it below. This website has not sent a message."
+        : "Your draft is ready. The portfolio’s email address has not been added yet. You can copy your draft below; nothing has been sent."
+      : "";
   function submit(event: FormEvent) {
     event.preventDefault();
     const next: Partial<Fields> = {};
@@ -24,33 +48,31 @@ export default function ContactForm() {
       next.message = "Please write a message of at least 10 characters.";
     setErrors(next);
     if (Object.keys(next).length) {
-      setFeedback("Please check the highlighted fields.");
+      setErrorFeedback("Please check the highlighted fields.");
       form.current
         ?.querySelector<HTMLInputElement>(`[name="${Object.keys(next)[0]}"]`)
         ?.focus();
       return;
     }
+    const trimmedSubject = fields.subject.trim();
     const body = `${fields.message.trim()}\n\nFrom: ${fields.name.trim()}\nReply to: ${fields.email.trim()}`;
-    setDraft(`Subject: ${fields.subject.trim()}\n\n${body}`);
+    setErrorFeedback("");
+    setDraft(`Subject: ${trimmedSubject}\n\n${body}`);
+    setComposed({ subject: trimmedSubject, body });
     setCopied(false);
-    if (personal.email) {
-      setEmailLink(
-        `mailto:${personal.email}?subject=${encodeURIComponent(fields.subject.trim())}&body=${encodeURIComponent(body)}`,
-      );
-      setFeedback(
-        "Your email draft is ready. Open your email app to review and send it, or copy it below. This website has not sent a message.",
-      );
-    } else
-      setFeedback(
-        "Your draft is ready. The portfolio’s email address has not been added yet. You can copy your draft below; nothing has been sent.",
-      );
+  }
+  function handleFieldChange(field: keyof Fields, value: string) {
+    setFields((prev) => ({ ...prev, [field]: value }));
+    setDraft("");
+    setComposed(null);
+    setErrorFeedback("");
   }
   async function copyDraft() {
     try {
       await navigator.clipboard.writeText(draft);
       setCopied(true);
     } catch {
-      setFeedback(
+      setErrorFeedback(
         "Copy is unavailable in this browser. Select and copy the draft text below.",
       );
     }
@@ -88,11 +110,9 @@ export default function ContactForm() {
                 placeholder="Tell me a little about the opportunity…"
                 aria-invalid={Boolean(errors[field])}
                 aria-describedby={errors[field] ? `${field}-error` : undefined}
-                onChange={(event) => {
-                  setFields({ ...fields, [field]: event.target.value });
-                  setDraft("");
-                  setFeedback("");
-                }}
+                onChange={(event) =>
+                  handleFieldChange(field, event.target.value)
+                }
               />
             ) : (
               <input
@@ -118,11 +138,9 @@ export default function ContactForm() {
                 }
                 aria-invalid={Boolean(errors[field])}
                 aria-describedby={errors[field] ? `${field}-error` : undefined}
-                onChange={(event) => {
-                  setFields({ ...fields, [field]: event.target.value });
-                  setDraft("");
-                  setFeedback("");
-                }}
+                onChange={(event) =>
+                  handleFieldChange(field, event.target.value)
+                }
               />
             )}
             {errors[field] && (
@@ -136,7 +154,9 @@ export default function ContactForm() {
       <div className="form-bottom">
         <p>
           {personal.email
-            ? "Prepare a draft, then review and send in your email app."
+            ? isMobile
+              ? "Prepare a draft, then review and send in your email app."
+              : "Prepare a draft, then review and send in Gmail."
             : "Prepare a draft. Contact email to be added."}
         </p>
         <button type="submit" className="button button-primary">
@@ -152,8 +172,14 @@ export default function ContactForm() {
           <textarea id="email-draft" value={draft} readOnly rows={6} />
           <div className="draft-actions">
             {emailLink && (
-              <a className="button button-primary" href={emailLink}>
-                Open email app <ArrowUpRight size={16} />
+              <a
+                className="button button-primary"
+                href={emailLink}
+                target={isMobile ? undefined : "_blank"}
+                rel={isMobile ? undefined : "noopener noreferrer"}
+              >
+                {isMobile ? "Open email app" : "Open in Gmail"}{" "}
+                <ArrowUpRight size={16} />
               </a>
             )}
             <button

@@ -96,7 +96,8 @@ test("filters the expanded project collection and opens accessible project detai
 
 test("downloads the public resume and uses real contact and social destinations", async ({
   page,
-}) => {
+}, testInfo) => {
+  const isMobile = testInfo.project.name === "mobile";
   await page.goto("/");
   const downloadEvent = page.waitForEvent("download");
   await page.getByRole("link", { name: "Download Resume" }).first().click();
@@ -118,6 +119,15 @@ test("downloads the public resume and uses real contact and social destinations"
     "href",
     "https://www.linkedin.com/in/orlandone-estoce-62a0673a4",
   );
+  const expectedEmailHref = isMobile
+    ? "mailto:estoce.orlan@gmail.com"
+    : "https://mail.google.com/mail/?view=cm&fs=1&to=estoce.orlan%40gmail.com";
+  await expect(
+    page.getByRole("link", { name: "Email", exact: true }).first(),
+  ).toHaveAttribute("href", expectedEmailHref);
+  await expect(
+    page.getByRole("link", { name: "estoce.orlan@gmail.com", exact: true }),
+  ).toHaveAttribute("href", expectedEmailHref);
   await expect(
     page.getByRole("link", { name: "0994 558 1412", exact: true }),
   ).toHaveAttribute("href", "tel:+639945581412");
@@ -131,7 +141,8 @@ test("downloads the public resume and uses real contact and social destinations"
 test("validates contact fields and prepares a truthful, copyable email draft", async ({
   page,
   context,
-}) => {
+}, testInfo) => {
+  const isMobile = testInfo.project.name === "mobile";
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   const submissions: string[] = [];
   page.on("request", (request) => {
@@ -155,11 +166,22 @@ test("validates contact fields and prepares a truthful, copyable email draft", a
   await expect(
     page.getByText(/This website has not sent a message/),
   ).toBeVisible();
+  const actionLabel = isMobile ? "Open email app" : "Open in Gmail";
   const emailUrl = await page
-    .getByRole("link", { name: "Open email app" })
+    .getByRole("link", { name: actionLabel })
     .getAttribute("href");
-  expect(emailUrl).toContain("mailto:estoce.orlan@gmail.com?");
-  expect(decodeURIComponent(emailUrl!)).toContain("subject=Internship inquiry");
+  if (isMobile) {
+    expect(emailUrl).toContain("mailto:estoce.orlan@gmail.com?");
+    expect(decodeURIComponent(emailUrl!)).toContain(
+      "subject=Internship inquiry",
+    );
+  } else {
+    expect(emailUrl).toContain("https://mail.google.com/mail/?");
+    const parsed = new URL(emailUrl!);
+    expect(parsed.searchParams.get("to")).toBe("estoce.orlan@gmail.com");
+    expect(parsed.searchParams.get("su")).toBe("Internship inquiry");
+    expect(parsed.searchParams.get("body")).toContain("Portfolio test");
+  }
   await expect(page.getByLabel("Your email draft")).toHaveValue(
     /Subject: Internship inquiry/,
   );

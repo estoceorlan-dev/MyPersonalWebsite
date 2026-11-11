@@ -11,6 +11,8 @@ import {
   Facebook,
 } from "lucide-react";
 import { personal } from "../data/personal";
+import { useIsMobile } from "../hooks/useIsMobile";
+import { buildEmailComposeUrl } from "../utils/email";
 import { Modal } from "./Modal";
 
 export function Reveal({
@@ -114,6 +116,7 @@ export function ResumeButton({
 }
 
 export function SocialLinks({ labeled = false }: { labeled?: boolean }) {
+  const isMobile = useIsMobile();
   const links = [
     { label: "GitHub", icon: Github, url: personal.socials.github },
     { label: "LinkedIn", icon: Linkedin, url: personal.socials.linkedin },
@@ -121,7 +124,7 @@ export function SocialLinks({ labeled = false }: { labeled?: boolean }) {
     {
       label: "Email",
       icon: Mail,
-      url: personal.email ? `mailto:${personal.email}` : "",
+      url: buildEmailComposeUrl({ to: personal.email, isMobile }),
     },
   ].filter(({ url }) => Boolean(url));
   return (
@@ -131,7 +134,7 @@ export function SocialLinks({ labeled = false }: { labeled?: boolean }) {
           key={label}
           href={url}
           aria-label={label}
-          target={label === "Email" ? undefined : "_blank"}
+          target={url.startsWith("mailto:") ? undefined : "_blank"}
           rel="noopener noreferrer"
         >
           <Icon size={18} />

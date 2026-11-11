@@ -1,9 +1,13 @@
 import { ArrowUpRight, Mail, Phone } from "lucide-react";
 import { personal } from "../data/personal";
+import { useIsMobile } from "../hooks/useIsMobile";
+import { buildEmailComposeUrl } from "../utils/email";
 import { Reveal, SocialLinks } from "../components/Shared";
 import ContactForm from "../components/ContactForm";
 
 export default function Contact() {
+  const isMobile = useIsMobile();
+  const emailHref = buildEmailComposeUrl({ to: personal.email, isMobile });
   return (
     <section
       id="contact"
@@ -34,7 +38,13 @@ export default function Contact() {
             <div>
               <span>EMAIL ME AT</span>
               {personal.email ? (
-                <a href={`mailto:${personal.email}`}>{personal.email}</a>
+                <a
+                  href={emailHref}
+                  target={isMobile ? undefined : "_blank"}
+                  rel={isMobile ? undefined : "noopener noreferrer"}
+                >
+                  {personal.email}
+                </a>
               ) : (
                 <strong>[Your professional email]</strong>
               )}
