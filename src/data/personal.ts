@@ -6,7 +6,7 @@ export const personal = {
   aspiration: "Aspiring Software Developer",
   introduction: "Building useful software for everyday work.",
   summary:
-    "I build web and mobile applications, connect them to databases, and explore machine learning. I’m looking for an IT internship where I can contribute, learn from a team, and keep improving my craft.",
+    "I’m an Information Technology student with hands-on experience in web and mobile development, database integration, and IT systems support. I’m seeking an internship where I can contribute to real projects, solve practical problems, and grow alongside experienced developers.",
   availability: "Open to internship opportunities",
   school: "Buenavista Community College",
   academicYear: "Academic year 2026–2027",

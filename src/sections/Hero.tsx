@@ -56,9 +56,6 @@ export default function Hero() {
                 THE PERSON BEHIND THE PROJECTS
               </span>
             </div>
-            <span className="portrait-side-note" aria-hidden="true">
-              CURIOUS MIND. BUILDER AT HEART.
-            </span>
             <div className="availability">
               <span className="status-dot" />
               {personal.availability}

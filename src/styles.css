@@ -438,15 +438,6 @@ textarea {
   z-index: 2;
   transform: rotate(9deg);
 }
-.portrait-side-note {
-  position: absolute;
-  right: 11px;
-  top: 137px;
-  writing-mode: vertical-rl;
-  font-size: 7px;
-  color: var(--muted);
-  letter-spacing: 2px;
-}
 .availability {
   position: absolute;
   top: 58px;
@@ -1941,10 +1932,6 @@ textarea {
   .portrait-frame {
     height: 330px;
   }
-  .portrait-side-note {
-    right: 6px;
-    font-size: 6px;
-  }
   .portrait-asterisk {
     font-size: 53px;
   }
@@ -2215,10 +2202,6 @@ textarea {
   }
   .portrait-frame {
     height: 328px;
-  }
-  .portrait-side-note {
-    right: 8px;
-    top: 126px;
   }
   .availability {
     top: 52px;
