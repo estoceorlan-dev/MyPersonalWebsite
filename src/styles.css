@@ -3056,6 +3056,11 @@ textarea {
   aspect-ratio: 16 / 8.5;
   overflow: hidden;
   background: #f4f1f3;
+  transition: aspect-ratio 240ms ease;
+}
+.carousel-stage.is-portrait {
+  aspect-ratio: 16 / 10;
+  background: radial-gradient(circle at top, #f7f5fa, #ece8f2);
 }
 .carousel-slide {
   position: absolute;
@@ -3077,6 +3082,22 @@ textarea {
   height: 100%;
   object-fit: cover;
   object-position: top center;
+}
+.carousel-slide.is-portrait {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 54px;
+}
+.carousel-slide.is-portrait > img {
+  width: auto;
+  height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  object-position: center;
+  border-radius: 12px;
+  border: 1px solid #00000014;
+  box-shadow: 0 12px 30px #1f1b2e1f;
 }
 .carousel-nav {
   position: absolute;

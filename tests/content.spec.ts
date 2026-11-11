@@ -6,8 +6,31 @@ test("shows all 13 projects, links grouped repositories, and displays the Floré
   await page.goto("/#projects");
   await expect(page.locator(".project-card")).toHaveCount(6);
   await expect(
+    page.getByRole("img", { name: "VitalySync logo" }),
+  ).toBeVisible();
+  await expect(
     page.getByRole("img", { name: "Floréa Haven logo" }),
   ).toBeVisible();
+  await page.getByRole("button", { name: "View VitalySync details" }).click();
+  const vitaly = page.getByRole("dialog", {
+    name: "VitalySync",
+    exact: true,
+  });
+  const vitalyCarousel = vitaly.getByRole("region", {
+    name: "VitalySync interface screenshots",
+  });
+  await expect(vitalyCarousel).toBeVisible();
+  await expect(vitalyCarousel.locator(".carousel-count")).toHaveText("01 / 09");
+  await expect(vitalyCarousel.locator(".carousel-label")).toHaveText(
+    "Welcome Page",
+  );
+  await vitaly.screenshot({ path: ".qa/vitalysync-modal.png" });
+  await vitalyCarousel.getByRole("button", { name: "Next screenshot" }).click();
+  await expect(vitalyCarousel.locator(".carousel-count")).toHaveText("02 / 09");
+  await expect(vitalyCarousel.locator(".carousel-label")).toHaveText(
+    "Home Page",
+  );
+  await page.keyboard.press("Escape");
   await page.getByRole("button", { name: "View all 13 projects" }).click();
   await expect(page.locator(".project-card")).toHaveCount(13);
   await expect(

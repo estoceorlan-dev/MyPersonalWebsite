@@ -100,6 +100,13 @@
 :root[data-theme="dark"] .carousel-stage {
   background: #141821;
 }
+:root[data-theme="dark"] .carousel-stage.is-portrait {
+  background: radial-gradient(circle at top, #1d2331, #12161f);
+}
+:root[data-theme="dark"] .carousel-slide.is-portrait > img {
+  border-color: #ffffff1f;
+  box-shadow: 0 14px 34px #00000066;
+}
 :root[data-theme="dark"] .carousel-dot {
   background: #46536a;
 }

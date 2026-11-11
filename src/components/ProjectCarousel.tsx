@@ -13,9 +13,13 @@ export default function ProjectCarousel({
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [portraitBySrc, setPortraitBySrc] = useState<Record<string, boolean>>(
+    {},
+  );
   const total = images.length;
   const safeIndex = activeIndex < total ? activeIndex : 0;
   const current = images[safeIndex];
+  const isCurrentPortrait = Boolean(current && portraitBySrc[current.src]);
 
   useEffect(() => {
     setActiveIndex(0);
@@ -59,21 +63,33 @@ export default function ProjectCarousel({
         }
       }}
     >
-      <div className="carousel-stage">
+      <div
+        className={`carousel-stage ${isCurrentPortrait ? "is-portrait" : ""}`}
+      >
         {images.map((item, idx) => {
           const isActive = idx === safeIndex;
+          const isPortrait = Boolean(portraitBySrc[item.src]);
           return (
             <div
               key={item.src}
-              className={`carousel-slide ${isActive ? "is-active" : ""}`}
+              className={`carousel-slide ${isActive ? "is-active" : ""} ${isPortrait ? "is-portrait" : ""}`}
               aria-hidden={!isActive}
             >
               <img
                 src={item.src}
                 alt={item.alt}
                 loading={idx === 0 ? "eager" : "lazy"}
-                width="1900"
-                height="990"
+                onLoad={(event) => {
+                  const { naturalWidth, naturalHeight } = event.currentTarget;
+                  if (naturalWidth > 0 && naturalHeight > 0) {
+                    const portrait = naturalHeight > naturalWidth;
+                    setPortraitBySrc((prev) =>
+                      prev[item.src] === portrait
+                        ? prev
+                        : { ...prev, [item.src]: portrait },
+                    );
+                  }
+                }}
               />
             </div>
           );
@@ -134,4 +150,3 @@ export default function ProjectCarousel({
     </div>
   );
 }
-
