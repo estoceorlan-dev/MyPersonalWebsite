@@ -8,7 +8,7 @@ The supplied resume is the source for the name, contact information, degree, col
 
 Orlandone later confirmed these additional skills directly: Java, TypeScript, PHP, Tailwind CSS, Canva, and deployment on Render and Vercel.
 
-The dates 2026–2027 are displayed as an academic year; no graduation date or year level is inferred. Eligibility is separate from course certifications. No LinkedIn URL was supplied.
+The dates 2026–2027 are displayed as an academic year; no graduation date or year level is inferred. Eligibility is separate from course certifications. The LinkedIn profile URL was supplied directly by Orlandone.
 
 ## Certificates
 

@@ -46,7 +46,7 @@ export const personal = {
   languages: ["English", "Cebuano", "Tagalog"],
   socials: {
     github: "https://github.com/estoceorlan-dev",
-    linkedin: "",
+    linkedin: "https://www.linkedin.com/in/orlandone-estoce-62a0673a4",
     facebook: "https://www.facebook.com/not.orlan",
   },
 };

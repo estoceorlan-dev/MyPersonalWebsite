@@ -113,8 +113,11 @@ test("downloads the public resume and uses real contact and social destinations"
     page.getByRole("link", { name: "Facebook", exact: true }).first(),
   ).toHaveAttribute("href", "https://www.facebook.com/not.orlan");
   await expect(
-    page.getByRole("link", { name: "LinkedIn", exact: true }),
-  ).toHaveCount(0);
+    page.getByRole("link", { name: "LinkedIn", exact: true }).first(),
+  ).toHaveAttribute(
+    "href",
+    "https://www.linkedin.com/in/orlandone-estoce-62a0673a4",
+  );
   await expect(
     page.getByRole("link", { name: "0994 558 1412", exact: true }),
   ).toHaveAttribute("href", "tel:+639945581412");
