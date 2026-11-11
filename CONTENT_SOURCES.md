@@ -6,6 +6,8 @@ Reviewed for the portfolio update on 2026-11-11.
 
 The supplied resume is the source for the name, contact information, degree, college, academic year, skills, languages, JCE Dry Goods Trading experience, VitalySync and JCE Management System contributions, and Civil Service Professional Eligibility.
 
+Orlandone later confirmed these additional skills directly: Java, TypeScript, PHP, Tailwind CSS, Canva, and deployment on Render and Vercel.
+
 The dates 2026–2027 are displayed as an academic year; no graduation date or year level is inferred. Eligibility is separate from course certifications. No LinkedIn URL was supplied.
 
 ## Certificates

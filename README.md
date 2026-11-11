@@ -33,7 +33,7 @@ Tests use installed Google Chrome by default. Set `PLAYWRIGHT_CHANNEL=msedge` fo
 | File                                           | Content                                                                                                                                 |
 | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/data/personal.ts`                         | Name, biography, contact details, school/academic year, interests, languages, social links, resume URL, domain, and SEO description.    |
-| `src/data/skills.ts`                           | Six skill categories based on the supplied resume.                                                                                      |
+| `src/data/skills.ts`                           | Six skill categories from the resume plus confirmed additions (Java, TypeScript, PHP, Tailwind CSS, Canva, Render, Vercel).             |
 | `src/data/projects.ts`                         | Thirteen projects, technologies, features, categories, repository/demo links, and optional contribution, status, year, and scope notes. |
 | `src/data/experience.ts`                       | Education and the JCE Dry Goods Trading role.                                                                                           |
 | `src/data/certifications.ts`                   | Civil Service Professional Eligibility and four course certificates (previews and PDFs in `public/certificates/`).                      |

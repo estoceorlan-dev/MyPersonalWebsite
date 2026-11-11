@@ -4,19 +4,19 @@ export type SkillGroup = {
   description: string;
   skills: string[];
 };
-// Personal skills explicitly listed in the supplied resume.
+// Resume skills plus additions confirmed by Orlandone (Java, TypeScript, PHP, Tailwind CSS, Canva, Render, Vercel).
 export const skillGroups: SkillGroup[] = [
   {
     title: "Programming",
     icon: "code",
     description: "Languages I use to build and solve problems.",
-    skills: ["Python", "JavaScript", "Dart"],
+    skills: ["Python", "Java", "JavaScript", "TypeScript", "PHP", "Dart"],
   },
   {
     title: "Web development",
     icon: "layout",
     description: "Building interfaces for the browser.",
-    skills: ["React", "HTML", "CSS"],
+    skills: ["React", "Tailwind CSS", "HTML", "CSS"],
   },
   {
     title: "Mobile development",
@@ -39,7 +39,16 @@ export const skillGroups: SkillGroup[] = [
   {
     title: "Tools & workflow",
     icon: "tools",
-    description: "Development, design, and documentation.",
-    skills: ["Git", "GitHub", "VS Code", "Figma", "Microsoft Office"],
+    description: "Development, design, deployment, and documentation.",
+    skills: [
+      "Git",
+      "GitHub",
+      "VS Code",
+      "Figma",
+      "Canva",
+      "Vercel",
+      "Render",
+      "Microsoft Office",
+    ],
   },
 ];

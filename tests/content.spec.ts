@@ -82,6 +82,21 @@ test("publishes resume-backed facts and metadata for the custom domain", async (
     "English · Cebuano · Tagalog",
   );
   await expect(page.locator("#skills")).toContainText("React Native");
+  for (const skill of [
+    "Java",
+    "TypeScript",
+    "PHP",
+    "Tailwind CSS",
+    "Canva",
+    "Vercel",
+    "Render",
+  ]) {
+    await expect(
+      page.locator("#skills .skill-tags > span", {
+        hasText: new RegExp(`^${skill}$`),
+      }),
+    ).toHaveCount(1);
+  }
   await expect(page.locator("#experience")).toContainText(
     "Administrative & IT Systems Support",
   );
