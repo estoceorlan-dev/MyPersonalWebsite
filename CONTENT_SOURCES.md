@@ -6,7 +6,11 @@ Reviewed for the portfolio update on 2026-11-11.
 
 The supplied resume is the source for the name, contact information, degree, college, academic year, skills, languages, JCE Dry Goods Trading experience, VitalySync and JCE Management System contributions, and Civil Service Professional Eligibility.
 
-The dates 2026–2027 are displayed as an academic year; no graduation date or year level is inferred. Eligibility is separate from course certifications. No LinkedIn URL, credential ID, verification URL, or certificate image was supplied.
+The dates 2026–2027 are displayed as an academic year; no graduation date or year level is inferred. Eligibility is separate from course certifications. No LinkedIn URL was supplied.
+
+## Certificates
+
+Course certificates come from the PDFs in `assets/certificates/`: Introduction to Modern AI (Cisco Networking Academy, 30 Apr 2026, Cert ID 2d5ce935-708e-4347-b257-92f46521801a), Cyber Threat Management (Cisco Networking Academy, 15 Dec 2025), Introduction to Cybersecurity (Cisco Networking Academy, 01 Oct 2025), and SQL Server Foundations Course (ScholarHat, 13 Sep 2025, Certificate ID BKCG130925, verifiable at scholarhat.com/certificate/verify). Public copies are renamed in `public/certificates/` so filenames do not expose an email address; WebP previews are rendered from page 1 of each PDF.
 
 The public download at `public/resume.pdf` is the supplied original, including reference contact details. The user requested their inclusion after confirming the reference had agreed. Original source files remain local and ignored by Git.
 

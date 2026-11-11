@@ -87,6 +87,21 @@ test("publishes resume-backed facts and metadata for the custom domain", async (
   );
   await expect(page.locator("#experience")).toContainText("2025–2026");
   await expect(page.locator("#certifications")).toContainText("March 2026");
+  const certificates = page.locator("#certifications .certificate-card");
+  await expect(certificates).toHaveCount(4);
+  await certificates.filter({ hasText: "SQL Server Foundations" }).click();
+  const certDialog = page.getByRole("dialog", {
+    name: "SQL Server Foundations",
+  });
+  await expect(certDialog).toContainText("BKCG130925");
+  await expect(
+    certDialog.getByRole("link", { name: "View PDF" }),
+  ).toHaveAttribute("href", "/certificates/sql-server-foundations.pdf");
+  await page.keyboard.press("Escape");
+  const certPdf = await page.request.get(
+    "/certificates/introduction-to-modern-ai.pdf",
+  );
+  expect((await certPdf.body()).subarray(0, 5).toString()).toBe("%PDF-");
   await expect(page.locator("main")).not.toContainText("[Your Name]");
   expect(await (await page.request.get("/robots.txt")).text()).toContain(
     "https://www.orlanestoce.online/sitemap.xml",

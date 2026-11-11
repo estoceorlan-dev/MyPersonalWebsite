@@ -50,7 +50,7 @@ export default function Certifications() {
         {certifications.length > 0 && (
           <>
             <div className="certifications-grid">
-              {(expanded ? certifications : certifications.slice(0, 3)).map(
+              {(expanded ? certifications : certifications.slice(0, 4)).map(
                 (certificate) => (
                   <button
                     className="certificate-card"
@@ -76,7 +76,7 @@ export default function Certifications() {
                 ),
               )}
             </div>
-            {certifications.length > 3 && (
+            {certifications.length > 4 && (
               <button
                 className="button button-secondary mt-6"
                 onClick={() => setExpanded(!expanded)}
@@ -118,17 +118,30 @@ export default function Certifications() {
             {selected.credentialId && (
               <p className="muted">Credential ID: {selected.credentialId}</p>
             )}
-            {selected.verificationUrl && (
-              <a
-                className="button button-primary mt-6"
-                href={selected.verificationUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Verify credential
-                <ArrowUpRight size={16} />
-              </a>
-            )}
+            <div className="certificate-actions">
+              {selected.pdfUrl && (
+                <a
+                  className="button button-primary"
+                  href={selected.pdfUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View PDF
+                  <ArrowUpRight size={16} />
+                </a>
+              )}
+              {selected.verificationUrl && (
+                <a
+                  className="button button-secondary"
+                  href={selected.verificationUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Verify credential
+                  <ArrowUpRight size={16} />
+                </a>
+              )}
+            </div>
           </>
         )}
       </Modal>

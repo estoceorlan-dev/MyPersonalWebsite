@@ -36,7 +36,7 @@ Tests use installed Google Chrome by default. Set `PLAYWRIGHT_CHANNEL=msedge` fo
 | `src/data/skills.ts`                           | Six skill categories based on the supplied resume.                                                                                      |
 | `src/data/projects.ts`                         | Thirteen projects, technologies, features, categories, repository/demo links, and optional contribution, status, year, and scope notes. |
 | `src/data/experience.ts`                       | Education and the JCE Dry Goods Trading role.                                                                                           |
-| `src/data/certifications.ts`                   | Civil Service Professional Eligibility and future certifications or achievements.                                                       |
+| `src/data/certifications.ts`                   | Civil Service Professional Eligibility and four course certificates (previews and PDFs in `public/certificates/`).                      |
 | `public/resume.pdf`                            | Original resume, including reference contact details as requested.                                                                      |
 | `public/favicon.svg`, `public/social-card.svg` | OE branding; run `npm run social-card` after editing the social graphic.                                                                |
 | `public/robots.txt`, `public/sitemap.xml`      | Search engine files for the custom domain.                                                                                              |

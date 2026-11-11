@@ -1377,44 +1377,64 @@ textarea {
 }
 .certifications-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 20px;
 }
 .certificate-card {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 17px;
-  padding: 25px;
+  gap: 12px;
+  padding: 14px 14px 18px;
   text-align: left;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 10px;
   background: #fcfbfd;
   color: var(--accent);
 }
 .certificate-card:hover {
   border-color: #aaa0c4;
   transform: translateY(-3px);
+  box-shadow: 0 12px 30px #322c4f0d;
 }
 .certificate-card > img {
-  height: 140px;
   width: 100%;
-  object-fit: contain;
+  aspect-ratio: 1.45;
+  height: auto;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: #fff;
+  margin-bottom: 4px;
+}
+.certificate-card > svg {
+  margin: 8px 0;
 }
 .certificate-card .eyebrow {
   margin: 0;
+  font-size: 8px;
+  letter-spacing: 1.2px;
 }
 .certificate-card strong {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
+  line-height: 1.4;
   color: var(--ink);
+  flex: 1;
 }
 .certificate-card > span:last-child {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   width: 100%;
-  font-size: 11px;
+  font-size: 10px;
   color: var(--muted);
+}
+.certificate-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
 }
 .contact-section {
   background: #f0eef6;
@@ -1821,6 +1841,8 @@ textarea {
   width: 100%;
   height: auto;
   margin-bottom: 20px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
 }
 @keyframes dialog-enter {
   from {
@@ -3144,6 +3166,9 @@ textarea {
   background: var(--accent);
 }
 @media (min-width: 768px) and (max-width: 999px) {
+  .certifications-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .cover-title {
     font-size: 22px;
   }
