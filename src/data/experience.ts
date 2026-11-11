@@ -11,21 +11,26 @@ export const education: TimelineEntry[] = [
   {
     title: "Bachelor of Science in Information Technology",
     organization: personal.school,
-    date: "[Start year] — Present",
+    date: "2026–2027",
     kind: "education",
     description:
-      "Building a foundation in information technology and applying it through practical development projects.",
-    highlights: ["Current academic status: " + personal.academicYear],
+      "Studying Information Technology with practical project work in web and mobile development, machine learning, and database integration.",
+    highlights: ["Academic and personal application development."],
   },
 ];
 export const experience: TimelineEntry[] = [
   {
-    title: "Learning through building",
-    organization: "Project-based development",
-    date: "[Project dates]",
-    kind: "project",
+    title: "Administrative & IT Systems Support",
+    organization: "JCE Dry Goods Trading · Sweetland, Buenavista, Bohol",
+    date: "2025–2026",
+    kind: "work",
     description:
-      "Exploring mobile development, machine learning, and web technologies through VitalySync, Mango Classifier, and Red vs. Blue.",
-    highlights: ["Individual responsibilities and contributions to be added."],
+      "Combined software development and IT support with day-to-day business administration.",
+    highlights: [
+      "Designed and developed a business management system with an integrated point-of-sale module.",
+      "Maintained and updated systems, and troubleshot technical issues affecting daily workflows.",
+      "Monitored business records and maintained data accuracy.",
+      "Prepared operational reports and supported documentation and business coordination.",
+    ],
   },
 ];

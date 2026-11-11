@@ -14,6 +14,13 @@ export type Achievement = {
   date: string;
   description: string;
 };
-// No credentials or achievements are assumed. Populate with verified information.
+// Eligibility is separate from course certifications, as in the resume.
 export const certifications: Certification[] = [];
-export const achievements: Achievement[] = [];
+export const achievements: Achievement[] = [
+  {
+    title: "Civil Service Professional Eligibility",
+    organization: "Civil Service Commission (CSC)",
+    date: "March 2026",
+    description: "Professional eligibility listed in my resume.",
+  },
+];

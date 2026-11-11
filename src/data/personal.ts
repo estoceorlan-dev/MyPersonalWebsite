@@ -1,40 +1,58 @@
-// Replace bracketed values before sharing. Empty links are never rendered as fake URLs.
+// Resume-backed content. Leave unprovided profile URLs empty.
 export const personal = {
-  name: "[Your Name]",
-  monogram: "YN",
+  name: "Orlandone Estoce",
+  monogram: "OE",
   role: "BS Information Technology Student",
-  aspiration: "Aspiring IT Professional",
-  introduction: "Turning curiosity into thoughtful digital experiences.",
+  aspiration: "Aspiring Software Developer",
+  introduction: "Building useful software for everyday work.",
   summary:
-    "An IT student exploring the intersection of development, design, and real-world problem solving. Ready to learn, contribute, and grow through an internship.",
+    "I build web and mobile applications, connect them to databases, and explore machine learning. I’m looking for an IT internship where I can contribute, learn from a team, and keep improving my craft.",
   availability: "Open to internship opportunities",
-  school: "[University / Institution]",
-  academicYear: "[Current year level]",
+  school: "Buenavista Community College",
+  academicYear: "Academic year 2026–2027",
   degree: "BS Information Technology",
-  email: "",
-  resumeUrl: "", // Put a PDF in public/resume.pdf, then set this to '/resume.pdf'.
-  siteUrl: "", // Full production URL; enables canonical and absolute Open Graph image URLs.
-  portraitAlt: "Portfolio owner portrait",
+  email: "estoce.orlan@gmail.com",
+  phone: "0994 558 1412",
+  phoneHref: "+639945581412",
+  resumeUrl: "/resume.pdf",
+  siteUrl: "https://www.orlanestoce.online",
+  portraitAlt: "Portrait of Orlandone Estoce",
   seoDescription:
-    "Portfolio of a BS Information Technology student seeking an IT internship. Explore projects in mobile development, web development, and machine learning.",
+    "Orlandone Estoce is a BSIT student at Buenavista Community College and aspiring software developer. Explore his web, mobile, database, and machine learning projects, IT support experience, and internship availability.",
   about: [
-    "I’m a Bachelor of Science in Information Technology student with an interest in building useful, considered digital experiences. My project work spans mobile applications, web development, and machine learning.",
-    "I’m looking for an internship where I can bring that curiosity to a team, learn from experienced professionals, and turn classroom knowledge into practical contributions.",
+    "I’m an Information Technology student at Buenavista Community College, with hands-on experience in software development, database integration, and technical support. My work includes Flutter applications, React interfaces, backend APIs, and machine learning projects.",
+    "At JCE Dry Goods Trading, I worked on a business management and point-of-sale system while supporting maintenance, troubleshooting, business records, and operational reporting. I’m ready to bring that practical experience to a collaborative IT team.",
   ],
   interests: [
-    "Thoughtful interfaces",
-    "Practical problem solving",
-    "Continuous learning",
+    {
+      title: "Software that supports real work",
+      description:
+        "Web, mobile, and business applications with practical workflows.",
+    },
+    {
+      title: "Technical troubleshooting",
+      description:
+        "System maintenance, updates, and resolving day-to-day IT issues.",
+    },
+    {
+      title: "Careful data management",
+      description:
+        "Database integration, accurate records, and clear operational reports.",
+    },
   ],
-  socials: { github: "", linkedin: "", facebook: "" },
+  languages: ["English", "Cebuano", "Tagalog"],
+  socials: {
+    github: "https://github.com/estoceorlan-dev",
+    linkedin: "",
+    facebook: "https://www.facebook.com/not.orlan",
+  },
 };
-
 export const navigation = [
   { id: "home", label: "Home" },
   { id: "about", label: "About" },
   { id: "skills", label: "Skills" },
   { id: "projects", label: "Projects" },
   { id: "experience", label: "Experience" },
-  { id: "certifications", label: "Certifications" },
+  { id: "certifications", label: "Credentials" },
   { id: "contact", label: "Contact" },
 ];

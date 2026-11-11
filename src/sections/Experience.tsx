@@ -16,7 +16,7 @@ export default function Experience() {
             number="04"
             label="The journey so far"
             title="Building a foundation."
-            description="Education, hands-on projects, and the next chapter: learning alongside a professional team."
+            description="An IT education supported by hands-on software development, business administration, and technical support experience."
           />
         </Reveal>
         <Reveal>

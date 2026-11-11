@@ -52,18 +52,18 @@ export default function About() {
               {[
                 {
                   icon: Lightbulb,
-                  title: personal.interests[0],
-                  text: "An interest in useful, approachable digital products.",
+                  title: personal.interests[0].title,
+                  text: personal.interests[0].description,
                 },
                 {
                   icon: Users,
-                  title: personal.interests[1],
-                  text: "A willingness to contribute and learn alongside a team.",
+                  title: personal.interests[1].title,
+                  text: personal.interests[1].description,
                 },
                 {
                   icon: BookOpen,
-                  title: personal.interests[2],
-                  text: "Looking for opportunities to put knowledge into practice.",
+                  title: personal.interests[2].title,
+                  text: personal.interests[2].description,
                 },
               ].map(({ icon: Icon, title, text }) => (
                 <div key={title}>
@@ -74,6 +74,10 @@ export default function About() {
                   </span>
                 </div>
               ))}
+            </div>
+            <div className="languages">
+              <span>Languages</span>
+              <p>{personal.languages.join(" · ")}</p>
             </div>
           </Reveal>
         </div>

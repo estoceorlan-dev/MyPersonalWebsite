@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Award, ArrowUpRight, Plus, Trophy } from "lucide-react";
+import { Award, ArrowUpRight, Plus } from "lucide-react";
 import { certifications, achievements } from "../data/certifications";
 import type { Certification } from "../data/certifications";
 import { Reveal, SectionHeading } from "../components/Shared";
@@ -12,18 +12,42 @@ export default function Certifications() {
     <section
       id="certifications"
       className="section section-white"
-      aria-label="Certifications and achievements"
+      aria-label="Credentials and eligibility"
     >
       <div className="container">
         <Reveal>
           <SectionHeading
             number="05"
-            label="Learning beyond the classroom"
-            title="Room to keep growing."
-            description="A collection for verified certifications, academic achievements, and milestones along the way."
+            label="Credentials & eligibility"
+            title="Learning. Applied."
+            description="Professional eligibility alongside a growing foundation in information technology."
           />
         </Reveal>
-        {certifications.length ? (
+        <div className="eligibility-list">
+          {achievements.map((item) => (
+            <Reveal key={item.title}>
+              <article className="eligibility-card">
+                <div className="credential-art" aria-hidden="true">
+                  <div className="mini-certificate">
+                    <Award size={30} />
+                    <i />
+                    <i />
+                    <span />
+                    <i />
+                  </div>
+                  <span className="credential-spark">+</span>
+                </div>
+                <div>
+                  <p className="eyebrow">Professional eligibility</p>
+                  <h3>{item.title}</h3>
+                  <p>{item.organization}</p>
+                  <span className="credential-date">{item.date}</span>
+                </div>
+              </article>
+            </Reveal>
+          ))}
+        </div>
+        {certifications.length > 0 && (
           <>
             <div className="certifications-grid">
               {(expanded ? certifications : certifications.slice(0, 3)).map(
@@ -45,7 +69,8 @@ export default function Certifications() {
                     <span className="eyebrow">{certificate.issuer}</span>
                     <strong>{certificate.title}</strong>
                     <span>
-                      {certificate.date} <ArrowUpRight size={17} />
+                      {certificate.date}
+                      <ArrowUpRight size={17} />
                     </span>
                   </button>
                 ),
@@ -63,53 +88,12 @@ export default function Certifications() {
               </button>
             )}
           </>
-        ) : (
-          <Reveal>
-            <div className="credentials-placeholder">
-              <div className="credential-art" aria-hidden="true">
-                <div className="mini-certificate">
-                  <Award size={30} />
-                  <i />
-                  <i />
-                  <span />
-                  <i />
-                </div>
-                <span className="credential-spark">+</span>
-              </div>
-              <div>
-                <p className="eyebrow">A space for the milestones</p>
-                <h3>Every new skill is a step forward.</h3>
-                <p>
-                  Verified certifications will be added here.
-                  <br />
-                  There are no published credentials yet.
-                </p>
-              </div>
-              <span className="outline-pill">
-                Always learning <Plus size={14} />
-              </span>
-            </div>
-          </Reveal>
         )}
-        <div className="achievements">
-          <div className="achievement-heading">
-            <Trophy size={19} />
-            <h3>Achievements & other credentials</h3>
-          </div>
-          {achievements.length ? (
-            achievements.map((item) => (
-              <article key={item.title}>
-                <h4>{item.title}</h4>
-                <p>
-                  {item.organization} · {item.date}
-                </p>
-                <p>{item.description}</p>
-              </article>
-            ))
-          ) : (
-            <p>Academic achievements and relevant credentials to be added.</p>
-          )}
-        </div>
+        {!achievements.length && !certifications.length && (
+          <p className="muted">
+            Credentials will be added here as they are available.
+          </p>
+        )}
       </div>
       <Modal
         open={Boolean(selected)}
@@ -141,7 +125,8 @@ export default function Certifications() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Verify credential <ArrowUpRight size={16} />
+                Verify credential
+                <ArrowUpRight size={16} />
               </a>
             )}
           </>

@@ -9,6 +9,7 @@ export default function ContactForm() {
   const [fields, setFields] = useState(initial);
   const [errors, setErrors] = useState<Partial<Fields>>({});
   const [draft, setDraft] = useState("");
+  const [emailLink, setEmailLink] = useState("");
   const [feedback, setFeedback] = useState("");
   const [copied, setCopied] = useState(false);
   const form = useRef<HTMLFormElement>(null);
@@ -33,9 +34,11 @@ export default function ContactForm() {
     setDraft(`Subject: ${fields.subject.trim()}\n\n${body}`);
     setCopied(false);
     if (personal.email) {
-      window.location.href = `mailto:${personal.email}?subject=${encodeURIComponent(fields.subject.trim())}&body=${encodeURIComponent(body)}`;
+      setEmailLink(
+        `mailto:${personal.email}?subject=${encodeURIComponent(fields.subject.trim())}&body=${encodeURIComponent(body)}`,
+      );
       setFeedback(
-        "Your email draft is ready. Finish sending it in your email app, or copy it below. This website has not sent a message.",
+        "Your email draft is ready. Open your email app to review and send it, or copy it below. This website has not sent a message.",
       );
     } else
       setFeedback(
@@ -133,7 +136,7 @@ export default function ContactForm() {
       <div className="form-bottom">
         <p>
           {personal.email
-            ? "Opens your email app. You review and send."
+            ? "Prepare a draft, then review and send in your email app."
             : "Prepare a draft. Contact email to be added."}
         </p>
         <button type="submit" className="button button-primary">
@@ -147,14 +150,21 @@ export default function ContactForm() {
         <div className="draft-preview">
           <label htmlFor="email-draft">Your email draft</label>
           <textarea id="email-draft" value={draft} readOnly rows={6} />
-          <button
-            type="button"
-            className="button button-secondary"
-            onClick={copyDraft}
-          >
-            {copied ? <Check size={16} /> : <Copy size={16} />}
-            {copied ? "Copied" : "Copy draft"}
-          </button>
+          <div className="draft-actions">
+            {emailLink && (
+              <a className="button button-primary" href={emailLink}>
+                Open email app <ArrowUpRight size={16} />
+              </a>
+            )}
+            <button
+              type="button"
+              className="button button-secondary"
+              onClick={copyDraft}
+            >
+              {copied ? <Check size={16} /> : <Copy size={16} />}
+              {copied ? "Copied" : "Copy draft"}
+            </button>
+          </div>
         </div>
       )}
     </form>

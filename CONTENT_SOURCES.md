@@ -1,0 +1,39 @@
+# Content sources
+
+Reviewed for the portfolio update on 2026-11-11.
+
+## Resume-backed information
+
+The supplied resume is the source for the name, contact information, degree, college, academic year, skills, languages, JCE Dry Goods Trading experience, VitalySync and JCE Management System contributions, and Civil Service Professional Eligibility.
+
+The dates 2026–2027 are displayed as an academic year; no graduation date or year level is inferred. Eligibility is separate from course certifications. No LinkedIn URL, credential ID, verification URL, or certificate image was supplied.
+
+The public download at `public/resume.pdf` removes reference details as requested. Original resume files remain local and ignored by Git.
+
+## Repository-backed projects
+
+Fourteen project cards cover sixteen project repositories. Blue vs. Yellow groups its frontend and backend; Floréa Haven groups the React and plain HTML versions. JCE Management System and JCE POS are separate implementations. The portfolio repository itself is excluded.
+
+- **VitalySync**: [README](https://github.com/estoceorlan-dev/VitalySync/blob/main/README.md).
+- **JCE Management System**: [README](https://github.com/estoceorlan-dev/JCE-Management-System/blob/main/README.md).
+- **Floréa Haven**: [README](https://github.com/estoceorlan-dev/Florea-Haven/blob/main/README.md), [HTML / JavaScript version](https://github.com/estoceorlan-dev/Florea-Haven-simple/blob/main/README.md).
+- **UniFind**: [README](https://github.com/estoceorlan-dev/UniFind/blob/main/README.md).
+- **Mango Classifier**: [README](https://github.com/estoceorlan-dev/Mango-Classifier/blob/main/README.md).
+- **JCE POS**: [README](https://github.com/estoceorlan-dev/jce-pos/blob/main/README.md).
+- **Leslie’s Restaurant**: [README](https://github.com/estoceorlan-dev/Leslie-s-Restaurant-Management-System/blob/main/README.md).
+- **Romel Hair Salon**: [README](https://github.com/estoceorlan-dev/Hair-Salon/blob/main/README.md).
+- **Roel’s Guitar Shop**: [README](https://github.com/estoceorlan-dev/Guitar-Shop/blob/main/README.md).
+- **AquaFlow**: [README](https://github.com/estoceorlan-dev/Water-Refilling-Management-System/blob/main/README.md).
+- **QuickServe**: [README](https://github.com/estoceorlan-dev/QuickServe/blob/main/README.md).
+- **PersonaScope**: [README](https://github.com/estoceorlan-dev/MBTI-Predictor/blob/main/README.md).
+- **Blue vs. Yellow**: [README](https://github.com/estoceorlan-dev/blue-vs-yellow-frontend/blob/main/README.md), [Backend repository](https://github.com/estoceorlan-dev/blue-vs-yellow-backend/blob/main/README.md).
+- **Red vs. Blue**: [README](https://github.com/estoceorlan-dev/RedvsBlue/blob/main/README.md).
+  Descriptions and technology lists follow the repository READMEs. QuickServe's Flask stack was also checked in `app.py` and `requirements.txt`. Contributions are attributed only where the resume supplies them.
+
+Mango Classifier uses MobileNetV2, TensorFlow/Keras, and Flask; the earlier ResNet placeholder was removed. AquaFlow is described as a frontend prototype. Hair Salon and JCE POS retain documented development limits. No production usage, performance numbers, or completion claims are inferred.
+
+Blue vs. Yellow's frontend and Floréa Haven's HTML preview responded successfully during review. This is a page-availability check, not verification of every external backend feature. Other projects link to source code. Gallery artwork is labeled illustrative or as a project cover.
+
+## Domain and branding
+
+The canonical domain is https://www.orlanestoce.online. Title, description, canonical URL, and Open Graph metadata use `src/data/personal.ts`. The favicon, social image, robots file, and sitemap use the current identity and domain.

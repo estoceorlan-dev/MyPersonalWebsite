@@ -5,6 +5,7 @@ test("has no automated WCAG A/AA violations on the page or project dialog", asyn
   page,
 }) => {
   await page.goto("/");
+  await page.getByRole("button", { name: "View all 14 projects" }).click();
   await page.evaluate(() => document.fonts.ready);
   const scan = () =>
     new AxeBuilder({ page })

@@ -8,3 +8,6 @@ dist/
 playwright-report/
 test-results/
 .qa/
+# Original resume sources stay local; public/resume.pdf is the approved public copy.
+assets/docs/Resume.pdf
+assets/images/Resume Image.png

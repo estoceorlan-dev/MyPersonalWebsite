@@ -76,7 +76,11 @@ export function ResumeButton({
   );
   if (personal.resumeUrl)
     return (
-      <a className={className} href={personal.resumeUrl} download>
+      <a
+        className={className}
+        href={personal.resumeUrl}
+        download="Orlandone-Estoce-Resume.pdf"
+      >
         {content}
       </a>
     );
@@ -110,62 +114,30 @@ export function ResumeButton({
 }
 
 export function SocialLinks({ labeled = false }: { labeled?: boolean }) {
-  const [missing, setMissing] = useState("");
   const links = [
     { label: "GitHub", icon: Github, url: personal.socials.github },
     { label: "LinkedIn", icon: Linkedin, url: personal.socials.linkedin },
-    ...(personal.socials.facebook
-      ? [{ label: "Facebook", icon: Facebook, url: personal.socials.facebook }]
-      : []),
+    { label: "Facebook", icon: Facebook, url: personal.socials.facebook },
     {
       label: "Email",
       icon: Mail,
       url: personal.email ? `mailto:${personal.email}` : "",
     },
-  ];
+  ].filter(({ url }) => Boolean(url));
   return (
-    <>
-      <div className={`social-links ${labeled ? "social-labeled" : ""}`}>
-        {links.map(({ label, icon: Icon, url }) =>
-          url ? (
-            <a
-              key={label}
-              href={url}
-              aria-label={label}
-              target={label === "Email" ? undefined : "_blank"}
-              rel="noopener noreferrer"
-            >
-              <Icon size={18} />
-              {labeled && <span>{label}</span>}
-            </a>
-          ) : (
-            <button
-              key={label}
-              aria-label={`${label} — not added yet`}
-              title={`${label} not added yet`}
-              onClick={() => setMissing(label)}
-            >
-              <Icon size={18} />
-              {labeled && <span>{label}</span>}
-            </button>
-          ),
-        )}
-      </div>
-      <Modal
-        open={Boolean(missing)}
-        onClose={() => setMissing("")}
-        title={`${missing || "Profile"} not added yet`}
-      >
-        <p className="muted">
-          This contact detail hasn’t been added to the portfolio yet.
-        </p>
-        <button
-          className="button button-secondary mt-6"
-          onClick={() => setMissing("")}
+    <div className={`social-links ${labeled ? "social-labeled" : ""}`}>
+      {links.map(({ label, icon: Icon, url }) => (
+        <a
+          key={label}
+          href={url}
+          aria-label={label}
+          target={label === "Email" ? undefined : "_blank"}
+          rel="noopener noreferrer"
         >
-          Got it
-        </button>
-      </Modal>
-    </>
+          <Icon size={18} />
+          {labeled && <span>{label}</span>}
+        </a>
+      ))}
+    </div>
   );
 }

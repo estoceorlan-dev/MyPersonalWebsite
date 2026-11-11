@@ -3,6 +3,7 @@ import {
   Database,
   LayoutTemplate,
   Server,
+  Smartphone,
   Wrench,
   ArrowDownRight,
 } from "lucide-react";
@@ -12,6 +13,7 @@ import { Reveal, SectionHeading } from "../components/Shared";
 const icons = {
   code: Braces,
   layout: LayoutTemplate,
+  mobile: Smartphone,
   server: Server,
   database: Database,
   tools: Wrench,
@@ -26,7 +28,7 @@ export default function Skills() {
             number="02"
             label="My toolkit"
             title="The tools behind the ideas."
-            description="A place for the languages, frameworks, and tools I use to turn an idea into something tangible."
+            description="The languages, frameworks, and tools I work with across software development, databases, and everyday IT support."
           />
         </Reveal>
         <div className="skills-grid">

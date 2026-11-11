@@ -17,7 +17,7 @@ export default function ProjectCard({
       <div className="project-body">
         <p className="project-category">
           <span>{project.category}</span>
-          <span>0{index + 1}</span>
+          <span>{String(index + 1).padStart(2, "0")}</span>
         </p>
         <h3>
           <button onClick={onOpen} aria-label={`View ${project.title} details`}>

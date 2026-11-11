@@ -1,4 +1,4 @@
-import { ArrowUpRight, Mail } from "lucide-react";
+import { ArrowUpRight, Mail, Phone } from "lucide-react";
 import { personal } from "../data/personal";
 import { Reveal, SocialLinks } from "../components/Shared";
 import ContactForm from "../components/ContactForm";
@@ -38,6 +38,13 @@ export default function Contact() {
               ) : (
                 <strong>[Your professional email]</strong>
               )}
+            </div>
+          </div>
+          <div className="contact-email">
+            <Phone size={21} />
+            <div>
+              <span>CALL ME AT</span>
+              <a href={`tel:${personal.phoneHref}`}>{personal.phone}</a>
             </div>
           </div>
           <SocialLinks labeled />

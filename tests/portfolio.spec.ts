@@ -9,12 +9,12 @@ test("renders every section without runtime errors or horizontal overflow", asyn
     if (message.type() === "error") errors.push(message.text());
   });
   await page.goto("/");
-  await expect(page).toHaveTitle(/Your Name.*IT Student/);
+  await expect(page).toHaveTitle(/Orlandone Estoce.*IT Student/);
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "[Your Name]",
+    "Orlandone Estoce",
   );
   await expect(
-    page.getByRole("img", { name: "Portfolio owner portrait" }),
+    page.getByRole("img", { name: "Portrait of Orlandone Estoce" }),
   ).toBeVisible();
   for (const id of [
     "home",
@@ -37,7 +37,9 @@ test("renders every section without runtime errors or horizontal overflow", asyn
     ).toBe(true);
   }
   await expect(
-    page.getByText("There are no published credentials yet.", { exact: false }),
+    page.getByRole("heading", {
+      name: "Civil Service Professional Eligibility",
+    }),
   ).toBeVisible();
   expect(errors).toEqual([]);
   await page.evaluate(() => window.scrollTo(0, 0));
@@ -49,7 +51,7 @@ test("renders every section without runtime errors or horizontal overflow", asyn
   await page.screenshot({ path: `.qa/${testInfo.project.name}-hero.png` });
 });
 
-test("filters projects, handles an empty category, and opens accessible project details", async ({
+test("filters the expanded project collection and opens accessible project details", async ({
   page,
 }) => {
   await page.goto("/#projects");
@@ -67,16 +69,19 @@ test("filters projects, handles an empty category, and opens accessible project 
     .getByRole("button", { name: "Academic Projects", exact: true })
     .click();
   await expect(
-    page.getByText("No projects in this category yet."),
+    page.getByRole("button", { name: "View VitalySync details" }),
   ).toBeVisible();
-  await page
-    .getByRole("button", { name: "View all projects", exact: true })
-    .click();
+  await expect(
+    page.getByRole("button", { name: "View Leslie’s Restaurant details" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: /^All projects/ }).click();
   const trigger = page.getByRole("button", { name: "View VitalySync details" });
   await trigger.click();
   const dialog = page.getByRole("dialog", { name: "VitalySync", exact: true });
   await expect(dialog).toBeVisible();
-  await expect(dialog.getByText("Repository link to be added")).toBeVisible();
+  await expect(
+    dialog.getByRole("link", { name: "View repository", exact: true }),
+  ).toHaveAttribute("href", "https://github.com/estoceorlan-dev/VitalySync");
   await expect(
     dialog.getByText("Adaptive lifestyle recommendations", { exact: true }),
   ).toBeVisible();
@@ -89,22 +94,30 @@ test("filters projects, handles an empty category, and opens accessible project 
   await expect(trigger).toBeFocused();
 });
 
-test("resume and profile buttons explain missing content without fake destinations", async ({
+test("downloads the public resume and uses real contact and social destinations", async ({
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Download Resume" }).first().click();
-  const dialog = page.getByRole("dialog", { name: "Resume not added yet" });
-  await expect(dialog).toBeVisible();
-  await dialog.getByRole("button", { name: "Close dialog" }).click();
-  await page
-    .getByRole("button", { name: "GitHub — not added yet" })
-    .first()
-    .click();
+  const downloadEvent = page.waitForEvent("download");
+  await page.getByRole("link", { name: "Download Resume" }).first().click();
+  const download = await downloadEvent;
+  expect(download.suggestedFilename()).toBe("Orlandone-Estoce-Resume.pdf");
+  expect(await download.failure()).toBeNull();
+  const resume = await page.request.get("/resume.pdf");
+  expect(resume.ok()).toBe(true);
+  expect((await resume.body()).subarray(0, 5).toString()).toBe("%PDF-");
   await expect(
-    page.getByRole("dialog", { name: "GitHub not added yet" }),
-  ).toBeVisible();
-  await page.keyboard.press("Escape");
+    page.getByRole("link", { name: "GitHub", exact: true }).first(),
+  ).toHaveAttribute("href", "https://github.com/estoceorlan-dev");
+  await expect(
+    page.getByRole("link", { name: "Facebook", exact: true }).first(),
+  ).toHaveAttribute("href", "https://www.facebook.com/not.orlan");
+  await expect(
+    page.getByRole("link", { name: "LinkedIn", exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("link", { name: "0994 558 1412", exact: true }),
+  ).toHaveAttribute("href", "tel:+639945581412");
   expect(
     await page
       .locator('a[href="#"], a[href=""], a[href*="example.com"]')
@@ -136,7 +149,14 @@ test("validates contact fields and prepares a truthful, copyable email draft", a
     .getByLabel("Your message", { exact: false })
     .fill("I would like to discuss an internship opportunity.");
   await page.getByRole("button", { name: "Prepare email" }).click();
-  await expect(page.getByText(/nothing has been sent/)).toBeVisible();
+  await expect(
+    page.getByText(/This website has not sent a message/),
+  ).toBeVisible();
+  const emailUrl = await page
+    .getByRole("link", { name: "Open email app" })
+    .getAttribute("href");
+  expect(emailUrl).toContain("mailto:estoce.orlan@gmail.com?");
+  expect(decodeURIComponent(emailUrl!)).toContain("subject=Internship inquiry");
   await expect(page.getByLabel("Your email draft")).toHaveValue(
     /Subject: Internship inquiry/,
   );

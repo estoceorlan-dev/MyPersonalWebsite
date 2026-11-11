@@ -10,10 +10,12 @@ import { Modal } from "../components/Modal";
 export default function Projects() {
   const [category, setCategory] = useState<ProjectCategory>("All projects");
   const [selected, setSelected] = useState<Project | null>(null);
+  const [expanded, setExpanded] = useState(false);
   const filtered = projects.filter(
     (project) =>
       category === "All projects" || project.categories.includes(category),
   );
+  const visible = expanded ? filtered : filtered.slice(0, 6);
   return (
     <section
       id="projects"
@@ -26,7 +28,7 @@ export default function Projects() {
             number="03"
             label="Selected work"
             title="From a thought to a thing."
-            description="A selection of projects across mobile, web, and machine learning. Each one is a chance to learn by doing."
+            description="Mobile applications, business systems, and machine learning experiments. Explore the code and the ideas behind each project."
           />
         </Reveal>
         <div
@@ -38,7 +40,10 @@ export default function Projects() {
             <button
               key={item}
               aria-pressed={category === item}
-              onClick={() => setCategory(item)}
+              onClick={() => {
+                setCategory(item);
+                setExpanded(false);
+              }}
             >
               {item}
               {item === "All projects" && (
@@ -48,12 +53,11 @@ export default function Projects() {
           ))}
         </div>
         <p className="sr-only" role="status">
-          {filtered.length} {filtered.length === 1 ? "project" : "projects"}{" "}
-          shown
+          Showing {visible.length} of {filtered.length} matching projects
         </p>
         {filtered.length ? (
           <div className="projects-grid">
-            {filtered.map((project) => (
+            {visible.map((project) => (
               <Reveal key={project.id}>
                 <ProjectCard
                   project={project}
@@ -76,11 +80,36 @@ export default function Projects() {
             </button>
           </div>
         )}
+        {filtered.length > 6 && (
+          <div className="project-expand">
+            <button
+              className="button button-secondary"
+              aria-expanded={expanded}
+              onClick={() => {
+                setExpanded(!expanded);
+                if (expanded)
+                  document.getElementById("projects")?.scrollIntoView();
+              }}
+            >
+              {expanded
+                ? "Show featured projects"
+                : `View all ${filtered.length} projects`}
+              <ArrowUpRight size={16} />
+            </button>
+          </div>
+        )}
         <div className="projects-footnote">
-          <span>A small collection. An ongoing learning journey.</span>
           <span>
-            More to build <ArrowUpRight size={16} />
+            {visible.length} of {filtered.length} projects · An ongoing learning
+            journey.
           </span>
+          <a
+            href="https://github.com/estoceorlan-dev?tab=repositories"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Explore GitHub <ArrowUpRight size={16} />
+          </a>
         </div>
       </div>
       <Modal
@@ -93,6 +122,11 @@ export default function Projects() {
           <>
             <ProjectVisual project={selected} />
             <p className="eyebrow mt-6">{selected.category}</p>
+            {(selected.year || selected.status) && (
+              <p className="project-status">
+                {[selected.year, selected.status].filter(Boolean).join(" · ")}
+              </p>
+            )}
             <p className="modal-description">{selected.description}</p>
             <h3 className="detail-heading">What it explores</h3>
             <ul className="feature-list">
@@ -109,8 +143,22 @@ export default function Projects() {
                 <span key={technology}>{technology}</span>
               ))}
             </div>
-            <h3 className="detail-heading">My contribution</h3>
-            <p className="muted">{selected.role}</p>
+            {selected.role && (
+              <>
+                <h3 className="detail-heading">My contribution</h3>
+                <p className="muted">{selected.role}</p>
+              </>
+            )}
+            {selected.notes && (
+              <div className="project-scope">
+                <h3 className="detail-heading">Project scope</h3>
+                {selected.notes.map((note) => (
+                  <p className="muted" key={note}>
+                    {note}
+                  </p>
+                ))}
+              </div>
+            )}
             <div className="project-links">
               {selected.repository ? (
                 <a
@@ -128,20 +176,27 @@ export default function Projects() {
                   Repository link to be added
                 </span>
               )}
-              {selected.demo ? (
+              {selected.additionalRepositories?.map((repository) => (
+                <a
+                  className="button button-secondary"
+                  href={repository.url}
+                  key={repository.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Github size={16} />
+                  {repository.label}
+                </a>
+              ))}
+              {selected.demo && (
                 <a
                   className="button button-primary"
                   href={selected.demo}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Live demo <ArrowUpRight size={16} />
+                  {selected.demoLabel || "Live demo"} <ArrowUpRight size={16} />
                 </a>
-              ) : (
-                <span>
-                  <ArrowUpRight size={16} />
-                  Live demo not provided
-                </span>
               )}
             </div>
           </>

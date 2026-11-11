@@ -1,9 +1,36 @@
-import { Activity, ArrowUpRight, Leaf, ScanLine, Sparkles } from "lucide-react";
+import {
+  Activity,
+  ArrowUpRight,
+  Leaf,
+  ScanLine,
+  Sparkles,
+  Store,
+  Flower2,
+  Search,
+  ReceiptText,
+  Utensils,
+  Scissors,
+  Guitar,
+  Droplets,
+  BrainCircuit,
+} from "lucide-react";
 import { useId } from "react";
 import type { Project } from "../data/projects";
+const coverIcons = {
+  store: Store,
+  flower: Flower2,
+  search: Search,
+  receipt: ReceiptText,
+  utensils: Utensils,
+  scissors: Scissors,
+  guitar: Guitar,
+  droplets: Droplets,
+  brain: BrainCircuit,
+};
 
 export default function ProjectVisual({ project }: { project: Project }) {
   const gradientId = useId();
+  const CoverIcon = project.cover ? coverIcons[project.cover.icon] : Store;
   if (project.image)
     return (
       <div className="project-visual">
@@ -18,11 +45,23 @@ export default function ProjectVisual({ project }: { project: Project }) {
     );
   return (
     <div
-      className={`project-visual preview-${project.preview}`}
+      className={`project-visual preview-${project.preview} cover-${project.cover?.tone || "lavender"}`}
       role="img"
       aria-label={`${project.title} illustrative concept artwork, not an actual application screenshot`}
     >
-      <span className="preview-label">ILLUSTRATIVE PREVIEW</span>
+      <span className="preview-label">
+        {project.preview === "cover" ? "PROJECT COVER" : "ILLUSTRATIVE PREVIEW"}
+      </span>
+      {project.preview === "cover" && (
+        <div className="cover-art" aria-hidden="true">
+          <span className="cover-orbit" />
+          <div className="cover-icon">
+            <CoverIcon size={42} strokeWidth={1.25} />
+          </div>
+          <span className="cover-title">{project.title}</span>
+          <span className="cover-label">{project.cover?.label}</span>
+        </div>
+      )}
       {project.preview === "wellness" && (
         <div className="wellness-art" aria-hidden="true">
           <div className="wellness-wordmark">
@@ -108,7 +147,7 @@ export default function ProjectVisual({ project }: { project: Project }) {
           </div>
         </div>
       )}
-      {project.preview === "redblue" && (
+      {(project.preview === "redblue" || project.preview === "blueyellow") && (
         <div className="redblue-art" aria-hidden="true">
           <span className="redblue-top">TWO SIDES. ONE EXPERIENCE.</span>
           <div className="versus">
@@ -117,9 +156,9 @@ export default function ProjectVisual({ project }: { project: Project }) {
             <span className="blue-shape" />
           </div>
           <div className="redblue-caption">
-            <span>Red</span>
+            <span>{project.preview === "blueyellow" ? "Blue" : "Red"}</span>
             <Sparkles size={15} />
-            <span>Blue</span>
+            <span>{project.preview === "blueyellow" ? "Yellow" : "Blue"}</span>
           </div>
         </div>
       )}
