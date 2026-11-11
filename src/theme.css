@@ -1,5 +1,6 @@
 /* Theme tokens are shared by every section, including native dialogs. */
 :root[data-theme="dark"] {
+  color-scheme: dark;
   --paper: #0b0d12;
   --ink: #f2f4f8;
   --muted: #aab3c2;
@@ -9,6 +10,8 @@
   --surface: #13171f;
   --surface-raised: #1b212c;
   --color-accent: #91b5ff;
+  --scrollbar-thumb: #aab3c233;
+  --scrollbar-thumb-hover: #91b5ff66;
 }
 
 /* Both icons share a center so rotation and scale feel like one motion. */

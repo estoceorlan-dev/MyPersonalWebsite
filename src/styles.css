@@ -7,6 +7,7 @@
 }
 
 :root {
+  color-scheme: light;
   font-family: "Poppins", sans-serif;
   color: var(--ink);
   background: var(--paper);
@@ -19,9 +20,52 @@
   --accent: #5d5b99;
   --accent-light: #efedf8;
   --line: #e7e5e1;
+  --scrollbar-thumb: #645e6d38;
+  --scrollbar-thumb-hover: #5d5b996b;
 }
 * {
   box-sizing: border-box;
+}
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: var(--paper);
+}
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track {
+  background: var(--paper);
+}
+::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover,
+::-webkit-scrollbar-thumb:active {
+  background-color: var(--scrollbar-thumb-hover);
+}
+.modal::-webkit-scrollbar-track {
+  background: transparent;
+  margin-block: 12px;
+}
+@supports (-moz-appearance: none) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+  }
 }
 html {
   scroll-behavior: smooth;
