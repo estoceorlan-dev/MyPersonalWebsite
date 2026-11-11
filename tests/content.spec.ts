@@ -98,6 +98,8 @@ test("publishes resume-backed facts and metadata for the custom domain", async (
     "content",
     "https://www.orlanestoce.online/social-card.png",
   );
+  await expect(page.locator("#about")).toContainText("Curious by nature.");
+  await expect(page.locator("#about")).toContainText("Precise by practice.");
   await expect(page.locator("#about")).toContainText(
     "Buenavista Community College",
   );

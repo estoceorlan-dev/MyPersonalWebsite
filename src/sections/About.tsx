@@ -22,8 +22,9 @@ export default function About() {
         <div className="about-grid">
           <Reveal className="about-copy">
             <p className="large-copy">
-              A student by title.
-              <br />A builder by <span>curiosity.</span>
+              Curious by nature.
+              <br />
+              Precise by <span>practice.</span>
             </p>
             {personal.about.map((paragraph) => (
               <p key={paragraph}>{paragraph}</p>

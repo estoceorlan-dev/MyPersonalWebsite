@@ -20,8 +20,11 @@ export const personal = {
   seoDescription:
     "Orlandone Estoce is a BSIT student at Buenavista Community College and aspiring software developer. Explore his web, mobile, database, and machine learning projects, IT support experience, and internship availability.",
   about: [
-    "I’m an Information Technology student at Buenavista Community College, with hands-on experience in software development, database integration, and technical support. My work includes Flutter applications, React interfaces, backend APIs, and machine learning projects.",
-    "At JCE Dry Goods Trading, I worked on a business management and point-of-sale system while supporting maintenance, troubleshooting, business records, and operational reporting. I’m ready to bring that practical experience to a collaborative IT team.",
+    "I’m an Information Technology student at Buenavista Community College with hands-on experience in software development, database integration, and technical support.",
+    "I’ve worked on applications using Flutter and React, developed backend APIs, integrated databases, and explored machine learning through personal and academic projects. I enjoy understanding how things work, experimenting with different technologies, and finding practical ways to put them to use.",
+    "At JCE Dry Goods Trading, I’ve gained practical experience working with business software, including point-of-sale and management systems. My responsibilities have involved system maintenance, troubleshooting, data management, and operational reporting.",
+    "I value structure, careful planning, and attention to detail. I prefer staying ahead of deadlines and keeping work organized, while remaining flexible when priorities change. I believe an efficient process should lead to a quality result, and I’m comfortable working under pressure without losing sight of either.",
+    "I’m currently looking for an internship where I can apply what I’ve learned, contribute to real-world projects, and continue developing as an IT professional.",
   ],
   interests: [
     {
