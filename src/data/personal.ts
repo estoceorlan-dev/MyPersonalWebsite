@@ -48,6 +48,7 @@ export const personal = {
     github: "https://github.com/estoceorlan-dev",
     linkedin: "https://www.linkedin.com/in/orlandone-estoce-62a0673a4",
     facebook: "https://www.facebook.com/not.orlan",
+    whatsapp: "https://wa.me/639945581412",
   },
 };
 export const navigation = [

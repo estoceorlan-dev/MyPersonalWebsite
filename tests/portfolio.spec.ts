@@ -119,6 +119,9 @@ test("downloads the public resume and uses real contact and social destinations"
     "href",
     "https://www.linkedin.com/in/orlandone-estoce-62a0673a4",
   );
+  await expect(
+    page.getByRole("link", { name: "WhatsApp", exact: true }).first(),
+  ).toHaveAttribute("href", "https://wa.me/639945581412");
   const expectedEmailHref = isMobile
     ? "mailto:estoce.orlan@gmail.com"
     : "https://mail.google.com/mail/?view=cm&fs=1&to=estoce.orlan%40gmail.com";
