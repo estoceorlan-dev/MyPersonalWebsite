@@ -9,7 +9,7 @@ test("renders every section without runtime errors or horizontal overflow", asyn
     if (message.type() === "error") errors.push(message.text());
   });
   await page.goto("/");
-  await expect(page).toHaveTitle(/Orlandone Estoce.*IT Student/);
+  await expect(page).toHaveTitle("Orlandone Estoce - Software Developer");
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
     "Orlandone Estoce",
   );

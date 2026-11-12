@@ -22,7 +22,7 @@ export default defineConfig({
         return html
           .replaceAll(
             "__PORTFOLIO_TITLE__",
-            escapeHtml(`${personal.name} — IT Student & Aspiring Developer`),
+            escapeHtml(`${personal.name} - Software Developer`),
           )
           .replaceAll(
             "__PORTFOLIO_DESCRIPTION__",
