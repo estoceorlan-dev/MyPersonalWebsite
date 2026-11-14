@@ -1,6 +1,10 @@
 import crypto from "node:crypto";
+import dotenv from "dotenv";
 import pg from "pg";
 import bcrypt from "bcryptjs";
+import { parseEnv } from "@neon/env";
+import { attachDatabasePool } from "@neon/functions";
+import neonConfig from "../neon";
 import {
   personal as defaultPersonal,
   defaultSectionHeadings,
@@ -15,6 +19,8 @@ import {
   certifications as defaultCertifications,
   achievements as defaultAchievements,
 } from "../src/data/certifications";
+
+dotenv.config({ path: [".env.local", ".env"] });
 
 const { Pool } = pg;
 
@@ -125,13 +131,76 @@ export type AnalyticsSummary = {
 
 let pool: pg.Pool | null = null;
 let initialized = false;
+let initPromise: Promise<"neon" | "memory"> | null = null;
 let activeMode: "neon" | "memory" = "memory";
+let cachedPortfolioContent: {
+  data: SeededPortfolioContent;
+  fetchedAt: number;
+} | null = null;
+
+const PORTFOLIO_CACHE_TTL_MS = 30_000;
 
 // In-memory fallback state when DATABASE_URL is not configured
 let memoryOwner: OwnerUser | null = null;
 let memoryContent: SeededPortfolioContent = getInitialSeedContent();
 const memoryMedia = new Map<string, MediaAssetRecord>();
 const memoryVisits: VisitRecord[] = [];
+
+function normalizeNeonUrl(raw: string): string {
+  const trimmed = raw.trim();
+  if (
+    trimmed.includes("sslmode=") &&
+    !trimmed.includes("uselibpqcompat=")
+  ) {
+    return `${trimmed}&uselibpqcompat=true`;
+  }
+  return trimmed;
+}
+
+function resolveNeonPostgresEnv(): {
+  databaseUrl: string;
+  databaseUrlUnpooled: string;
+  branch?: string;
+  branchId?: string;
+} | null {
+  const rawDatabaseUrl = process.env.DATABASE_URL?.trim();
+  if (!rawDatabaseUrl) return null;
+
+  try {
+    if (process.env.DATABASE_URL_UNPOOLED?.trim()) {
+      const parsed = parseEnv(neonConfig, [
+        "DATABASE_URL",
+        "DATABASE_URL_UNPOOLED",
+      ]);
+      return {
+        databaseUrl: normalizeNeonUrl(parsed.postgres.databaseUrl),
+        databaseUrlUnpooled: normalizeNeonUrl(
+          parsed.postgres.databaseUrlUnpooled,
+        ),
+        branch: process.env.NEON_BRANCH?.trim(),
+        branchId: process.env.NEON_BRANCH_ID?.trim(),
+      };
+    }
+
+    const parsed = parseEnv(neonConfig, ["DATABASE_URL"]);
+    const url = normalizeNeonUrl(parsed.postgres.databaseUrl);
+    return {
+      databaseUrl: url,
+      databaseUrlUnpooled: url,
+      branch: process.env.NEON_BRANCH?.trim(),
+      branchId: process.env.NEON_BRANCH_ID?.trim(),
+    };
+  } catch {
+    const unpooled =
+      process.env.DATABASE_URL_UNPOOLED?.trim() || rawDatabaseUrl;
+    return {
+      databaseUrl: normalizeNeonUrl(rawDatabaseUrl),
+      databaseUrlUnpooled: normalizeNeonUrl(unpooled),
+      branch: process.env.NEON_BRANCH?.trim(),
+      branchId: process.env.NEON_BRANCH_ID?.trim(),
+    };
+  }
+}
 
 export function getDefaultOwnerCredentials() {
   const email = (
@@ -217,119 +286,153 @@ function seedBaselineVisits(): VisitRecord[] {
 
 export async function initStorage(): Promise<"neon" | "memory"> {
   if (initialized) return activeMode;
+  if (initPromise) return initPromise;
 
-  const { email, password } = getDefaultOwnerCredentials();
-  const defaultHash = await bcrypt.hash(password, 10);
+  initPromise = (async () => {
+    const { email, password } = getDefaultOwnerCredentials();
+    const defaultHash = await bcrypt.hash(password, 10);
 
-  const connectionString = process.env.DATABASE_URL?.trim();
-  if (connectionString) {
-    try {
-      const isLocal =
-        connectionString.includes("localhost") ||
-        connectionString.includes("127.0.0.1");
-      pool = new Pool({
-        connectionString,
-        ssl: isLocal ? false : { rejectUnauthorized: false },
-        max: 10,
-        idleTimeoutMillis: 30_000,
-      });
+    const neonEnv = resolveNeonPostgresEnv();
+    if (neonEnv) {
+      try {
+        const isLocal =
+          neonEnv.databaseUrl.includes("localhost") ||
+          neonEnv.databaseUrl.includes("127.0.0.1");
+        const sslOption = isLocal ? false : { rejectUnauthorized: false };
 
-      await pool.query(`
-        CREATE TABLE IF NOT EXISTS owner_users (
-          id SERIAL PRIMARY KEY,
-          email TEXT UNIQUE NOT NULL,
-          password_hash TEXT NOT NULL,
-          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        // Per Neon Postgres skill best practices:
+        // Use the direct (DATABASE_URL_UNPOOLED) connection for schema migrations / DDL,
+        // and the pooled (DATABASE_URL) connection for application query traffic.
+        const migrationPool = new Pool({
+          connectionString: neonEnv.databaseUrlUnpooled,
+          ssl: sslOption,
+          max: 2,
+          idleTimeoutMillis: 10_000,
+          connectionTimeoutMillis: 15_000,
+        });
+
+        try {
+          await migrationPool.query(`
+            CREATE TABLE IF NOT EXISTS owner_users (
+              id SERIAL PRIMARY KEY,
+              email TEXT UNIQUE NOT NULL,
+              password_hash TEXT NOT NULL,
+              updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            );
+
+            CREATE TABLE IF NOT EXISTS portfolio_content (
+              key TEXT PRIMARY KEY,
+              data JSONB NOT NULL,
+              updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            );
+
+            CREATE TABLE IF NOT EXISTS media_assets (
+              id TEXT PRIMARY KEY,
+              filename TEXT NOT NULL,
+              mime_type TEXT NOT NULL,
+              bytes BYTEA NOT NULL,
+              size_bytes INT NOT NULL,
+              created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            );
+
+            CREATE TABLE IF NOT EXISTS portfolio_visits (
+              id BIGSERIAL PRIMARY KEY,
+              visited_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+              visit_date DATE NOT NULL DEFAULT CURRENT_DATE,
+              visit_hour SMALLINT NOT NULL DEFAULT 0,
+              visitor_hash TEXT NOT NULL,
+              path TEXT NOT NULL DEFAULT '/',
+              device_type TEXT NOT NULL DEFAULT 'desktop'
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_portfolio_visits_date
+              ON portfolio_visits (visit_date);
+          `);
+        } finally {
+          await migrationPool.end().catch(() => undefined);
+        }
+
+        pool = new Pool({
+          connectionString: neonEnv.databaseUrl,
+          ssl: sslOption,
+          max: 5,
+          idleTimeoutMillis: 30_000,
+          connectionTimeoutMillis: 15_000,
+        });
+        attachDatabasePool(pool);
+
+        const existingOwner = await pool.query(
+          "SELECT id FROM owner_users LIMIT 1",
         );
-
-        CREATE TABLE IF NOT EXISTS portfolio_content (
-          key TEXT PRIMARY KEY,
-          data JSONB NOT NULL,
-          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-        );
-
-        CREATE TABLE IF NOT EXISTS media_assets (
-          id TEXT PRIMARY KEY,
-          filename TEXT NOT NULL,
-          mime_type TEXT NOT NULL,
-          bytes BYTEA NOT NULL,
-          size_bytes INT NOT NULL,
-          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-        );
-
-        CREATE TABLE IF NOT EXISTS portfolio_visits (
-          id BIGSERIAL PRIMARY KEY,
-          visited_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-          visit_date DATE NOT NULL DEFAULT CURRENT_DATE,
-          visit_hour SMALLINT NOT NULL DEFAULT 0,
-          visitor_hash TEXT NOT NULL,
-          path TEXT NOT NULL DEFAULT '/',
-          device_type TEXT NOT NULL DEFAULT 'desktop'
-        );
-
-        CREATE INDEX IF NOT EXISTS idx_portfolio_visits_date
-          ON portfolio_visits (visit_date);
-      `);
-
-      const existingOwner = await pool.query(
-        "SELECT id FROM owner_users LIMIT 1",
-      );
-      if (existingOwner.rowCount === 0) {
-        await pool.query(
-          "INSERT INTO owner_users (email, password_hash) VALUES ($1, $2)",
-          [email, defaultHash],
-        );
-      }
-
-      const existingContent = await pool.query(
-        "SELECT key FROM portfolio_content WHERE key = 'main' LIMIT 1",
-      );
-      if (existingContent.rowCount === 0) {
-        await pool.query(
-          "INSERT INTO portfolio_content (key, data) VALUES ('main', $1::jsonb)",
-          [JSON.stringify(getInitialSeedContent())],
-        );
-      }
-
-      const existingVisits = await pool.query(
-        "SELECT id FROM portfolio_visits LIMIT 1",
-      );
-      if (existingVisits.rowCount === 0) {
-        const baseline = seedBaselineVisits();
-        for (const v of baseline.slice(-180)) {
+        if (existingOwner.rowCount === 0) {
           await pool.query(
-            "INSERT INTO portfolio_visits (visit_date, visit_hour, visitor_hash, path, device_type) VALUES ($1::date, $2, $3, $4, $5)",
-            [v.visitDate, v.visitHour, v.visitorHash, v.path, v.deviceType],
+            "INSERT INTO owner_users (email, password_hash) VALUES ($1, $2)",
+            [email, defaultHash],
           );
         }
+
+        const existingContent = await pool.query(
+          "SELECT key FROM portfolio_content WHERE key = 'main' LIMIT 1",
+        );
+        if (existingContent.rowCount === 0) {
+          const initialContent = getInitialSeedContent();
+          await pool.query(
+            "INSERT INTO portfolio_content (key, data) VALUES ('main', $1::jsonb)",
+            [JSON.stringify(initialContent)],
+          );
+          cachedPortfolioContent = {
+            data: initialContent,
+            fetchedAt: Date.now(),
+          };
+        }
+
+        const existingVisits = await pool.query(
+          "SELECT id FROM portfolio_visits LIMIT 1",
+        );
+        if (existingVisits.rowCount === 0) {
+          const baseline = seedBaselineVisits();
+          const dates = baseline.map((v) => v.visitDate);
+          const hours = baseline.map((v) => v.visitHour);
+          const hashes = baseline.map((v) => v.visitorHash);
+          const paths = baseline.map((v) => v.path);
+          const devices = baseline.map((v) => v.deviceType);
+
+          await pool.query(
+            `INSERT INTO portfolio_visits (visit_date, visit_hour, visitor_hash, path, device_type)
+             SELECT * FROM UNNEST($1::date[], $2::smallint[], $3::text[], $4::text[], $5::text[])`,
+            [dates, hours, hashes, paths, devices],
+          );
+        }
+
+        activeMode = "neon";
+        initialized = true;
+        return activeMode;
+      } catch (error) {
+        console.warn(
+          "Neon PostgreSQL connection failed, falling back to in-memory store:",
+          error instanceof Error ? error.message : error,
+        );
+        pool = null;
       }
-
-      activeMode = "neon";
-      initialized = true;
-      return activeMode;
-    } catch (error) {
-      console.warn(
-        "Neon PostgreSQL connection failed, falling back to in-memory store:",
-        error instanceof Error ? error.message : error,
-      );
-      pool = null;
     }
-  }
 
-  // Initialize fallback store
-  memoryOwner = {
-    id: 1,
-    email,
-    passwordHash: defaultHash,
-    updatedAt: new Date().toISOString(),
-  };
-  memoryContent = getInitialSeedContent();
-  if (memoryVisits.length === 0) {
-    memoryVisits.push(...seedBaselineVisits());
-  }
-  activeMode = "memory";
-  initialized = true;
-  return activeMode;
+    // Initialize fallback store
+    memoryOwner = {
+      id: 1,
+      email,
+      passwordHash: defaultHash,
+      updatedAt: new Date().toISOString(),
+    };
+    memoryContent = getInitialSeedContent();
+    if (memoryVisits.length === 0) {
+      memoryVisits.push(...seedBaselineVisits());
+    }
+    activeMode = "memory";
+    initialized = true;
+    return activeMode;
+  })();
+
+  return initPromise;
 }
 
 export function getStorageMode(): "neon" | "memory" {
@@ -395,11 +498,22 @@ export async function updateOwnerCredentials(
 export async function getPortfolioContent(): Promise<SeededPortfolioContent> {
   await initStorage();
   if (pool && activeMode === "neon") {
+    if (
+      cachedPortfolioContent &&
+      Date.now() - cachedPortfolioContent.fetchedAt < PORTFOLIO_CACHE_TTL_MS
+    ) {
+      return cachedPortfolioContent.data;
+    }
     const res = await pool.query(
       "SELECT data FROM portfolio_content WHERE key = 'main' LIMIT 1",
     );
     if (res.rows[0]?.data) {
-      return res.rows[0].data as SeededPortfolioContent;
+      const data = res.rows[0].data as SeededPortfolioContent;
+      cachedPortfolioContent = {
+        data,
+        fetchedAt: Date.now(),
+      };
+      return data;
     }
   }
   return memoryContent;
@@ -409,15 +523,20 @@ export async function savePortfolioContent(
   content: SeededPortfolioContent,
 ): Promise<SeededPortfolioContent> {
   await initStorage();
+  const cloned = structuredClone(content);
   if (pool && activeMode === "neon") {
     await pool.query(
       `INSERT INTO portfolio_content (key, data, updated_at)
        VALUES ('main', $1::jsonb, NOW())
        ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data, updated_at = NOW()`,
-      [JSON.stringify(content)],
+      [JSON.stringify(cloned)],
     );
+    cachedPortfolioContent = {
+      data: cloned,
+      fetchedAt: Date.now(),
+    };
   }
-  memoryContent = structuredClone(content);
+  memoryContent = cloned;
   return memoryContent;
 }
 
@@ -472,6 +591,68 @@ export async function getMediaAsset(
     return res.rows[0] || null;
   }
   return memoryMedia.get(id) || null;
+}
+
+export async function deleteMediaAsset(id: string): Promise<void> {
+  await initStorage();
+  if (pool && activeMode === "neon") {
+    await pool.query("DELETE FROM media_assets WHERE id = $1", [id]);
+    return;
+  }
+  memoryMedia.delete(id);
+}
+
+export async function getDatabaseDiagnostics(): Promise<{
+  storageMode: "neon" | "memory";
+  pooledConfigured: boolean;
+  unpooledConfigured: boolean;
+  branch?: string;
+  branchId?: string;
+  database?: string;
+  role?: string;
+  counts?: {
+    ownerUsers: number;
+    portfolioContent: number;
+    mediaAssets: number;
+    portfolioVisits: number;
+  };
+}> {
+  await initStorage();
+  const neonEnv = resolveNeonPostgresEnv();
+  if (pool && activeMode === "neon") {
+    const res = await pool.query(`
+      SELECT current_database() AS database,
+             current_user AS role,
+             (SELECT COUNT(*)::int FROM owner_users) AS "ownerUsers",
+             (SELECT COUNT(*)::int FROM portfolio_content) AS "portfolioContent",
+             (SELECT COUNT(*)::int FROM media_assets) AS "mediaAssets",
+             (SELECT COUNT(*)::int FROM portfolio_visits) AS "portfolioVisits"
+    `);
+    const row = res.rows[0];
+    return {
+      storageMode: activeMode,
+      pooledConfigured: Boolean(neonEnv?.databaseUrl.includes("-pooler")),
+      unpooledConfigured: Boolean(
+        neonEnv?.databaseUrlUnpooled &&
+          !neonEnv.databaseUrlUnpooled.includes("-pooler"),
+      ),
+      branch: neonEnv?.branch,
+      branchId: neonEnv?.branchId,
+      database: row?.database,
+      role: row?.role,
+      counts: {
+        ownerUsers: Number(row?.ownerUsers ?? 0),
+        portfolioContent: Number(row?.portfolioContent ?? 0),
+        mediaAssets: Number(row?.mediaAssets ?? 0),
+        portfolioVisits: Number(row?.portfolioVisits ?? 0),
+      },
+    };
+  }
+  return {
+    storageMode: activeMode,
+    pooledConfigured: false,
+    unpooledConfigured: false,
+  };
 }
 
 export async function recordVisit(input: {
@@ -567,7 +748,15 @@ export async function getAnalyticsSummary(
   let visits: VisitRecord[] = memoryVisits;
   if (pool && activeMode === "neon") {
     const res = await pool.query(
-      "SELECT TO_CHAR(visit_date, 'YYYY-MM-DD') AS \"visitDate\", visit_hour AS \"visitHour\", visitor_hash AS \"visitorHash\", path, device_type AS \"deviceType\" FROM portfolio_visits",
+      `SELECT TO_CHAR(visit_date, 'YYYY-MM-DD') AS "visitDate",
+              visit_hour AS "visitHour",
+              visitor_hash AS "visitorHash",
+              path,
+              device_type AS "deviceType"
+         FROM portfolio_visits
+        WHERE visit_date >= CURRENT_DATE - INTERVAL '1460 days'
+        ORDER BY visit_date ASC, id ASC
+        LIMIT 50000`,
     );
     visits = res.rows;
   }

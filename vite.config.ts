@@ -1,9 +1,22 @@
-import "dotenv/config";
+import dotenv from "dotenv";
+dotenv.config({ path: [".env.local", ".env"] });
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
+import { functionBaseUrl } from "@neon/env";
 import { personal } from "./src/data/personal";
 import { createApiApp } from "./server/app";
+
+const DEFAULT_PRODUCTION_FUNCTION_URL =
+  "https://br-ancient-field-b36wqdbh-api.compute.c-4.ap-southeast-1.aws.neon.tech";
+
+const neonFunctionApiUrl = (() => {
+  try {
+    return functionBaseUrl("api");
+  } catch {
+    return DEFAULT_PRODUCTION_FUNCTION_URL;
+  }
+})();
 
 const escapeHtml = (value: string) =>
   value.replace(
@@ -15,6 +28,9 @@ const escapeHtml = (value: string) =>
   );
 
 export default defineConfig({
+  define: {
+    __NEON_FUNCTION_API_URL__: JSON.stringify(neonFunctionApiUrl),
+  },
   plugins: [
     react(),
     tailwindcss(),

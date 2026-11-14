@@ -109,10 +109,30 @@ export const defaultPortfolioContent: PortfolioContent = {
   achievements: defaultAchievements,
 };
 
-const rawApiBase = (import.meta.env.VITE_API_BASE_URL as string | undefined) || "";
+declare const __NEON_FUNCTION_API_URL__: string | undefined;
+
+const rawApiBase =
+  (import.meta.env.VITE_API_BASE_URL as string | undefined) || "";
+const neonFunctionBase =
+  typeof __NEON_FUNCTION_API_URL__ === "string"
+    ? __NEON_FUNCTION_API_URL__
+    : "";
+
+function resolveActiveApiBase(): string {
+  if (rawApiBase) return rawApiBase;
+  if (typeof window !== "undefined") {
+    const host = window.location.hostname;
+    if (host === "localhost" || host === "127.0.0.1") {
+      return "";
+    }
+  }
+  return neonFunctionBase;
+}
+
 export function getApiUrl(path: string): string {
-  if (!rawApiBase) return path;
-  return `${rawApiBase.replace(/\/+$/, "")}${path.startsWith("/") ? path : `/${path}`}`;
+  const base = resolveActiveApiBase();
+  if (!base) return path;
+  return `${base.replace(/\/+$/, "")}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
 export function resolveMediaUrl(url: string | undefined): string {
