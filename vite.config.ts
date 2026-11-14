@@ -1,11 +1,12 @@
 import dotenv from "dotenv";
 dotenv.config({ path: [".env.local", ".env"] });
+import type { IncomingMessage, ServerResponse } from "node:http";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { functionBaseUrl } from "@neon/env";
 import { personal } from "./src/data/personal";
-import { createApiApp } from "./server/app";
+import neonFunction from "./server/function";
 
 const DEFAULT_PRODUCTION_FUNCTION_URL =
   "https://br-ancient-field-b36wqdbh-api.compute.c-4.ap-southeast-1.aws.neon.tech";
@@ -17,6 +18,69 @@ const neonFunctionApiUrl = (() => {
     return DEFAULT_PRODUCTION_FUNCTION_URL;
   }
 })();
+
+async function handleApiMiddleware(
+  req: IncomingMessage,
+  res: ServerResponse,
+  next: () => void,
+  options: { spaOwnerFallback?: boolean } = {},
+): Promise<void> {
+  if (!req.url?.startsWith("/api/")) {
+    if (options.spaOwnerFallback && req.url?.startsWith("/owner")) {
+      req.url = "/index.html";
+    }
+    next();
+    return;
+  }
+
+  try {
+    const method = (req.method || "GET").toUpperCase();
+    const headers = new Headers();
+    for (const [key, value] of Object.entries(req.headers)) {
+      if (Array.isArray(value)) {
+        for (const item of value) headers.append(key, item);
+      } else if (typeof value === "string") {
+        headers.set(key, value);
+      }
+    }
+
+    let body: Uint8Array | undefined;
+    if (method !== "GET" && method !== "HEAD") {
+      const chunks: Buffer[] = [];
+      for await (const chunk of req) {
+        chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
+      }
+      const combined = Buffer.concat(chunks);
+      if (combined.byteLength > 0) {
+        body = new Uint8Array(combined);
+      }
+    }
+
+    const origin = `http://${req.headers.host || "127.0.0.1"}`;
+    const webReq = new Request(`${origin}${req.url}`, {
+      method,
+      headers,
+      body: body as BodyInit | undefined,
+    });
+
+    const webRes = await neonFunction.fetch(webReq);
+    res.statusCode = webRes.status;
+    webRes.headers.forEach((value, key) => {
+      res.setHeader(key, value);
+    });
+    const responseBuffer = Buffer.from(await webRes.arrayBuffer());
+    res.end(responseBuffer);
+  } catch (error) {
+    res.statusCode = 500;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.end(
+      JSON.stringify({
+        error:
+          error instanceof Error ? error.message : "Local API middleware error.",
+      }),
+    );
+  }
+}
 
 const escapeHtml = (value: string) =>
   value.replace(
@@ -37,34 +101,13 @@ export default defineConfig({
     {
       name: "portfolio-api",
       configureServer(server) {
-        const apiApp = createApiApp();
         server.middlewares.use((req, res, next) => {
-          if (req.url?.startsWith("/api/")) {
-            (apiApp as unknown as (
-              req: unknown,
-              res: unknown,
-              next: () => void,
-            ) => void)(req, res, next);
-            return;
-          }
-          next();
+          void handleApiMiddleware(req, res, next);
         });
       },
       configurePreviewServer(server) {
-        const apiApp = createApiApp();
         server.middlewares.use((req, res, next) => {
-          if (req.url?.startsWith("/api/")) {
-            (apiApp as unknown as (
-              req: unknown,
-              res: unknown,
-              next: () => void,
-            ) => void)(req, res, next);
-            return;
-          }
-          if (req.url?.startsWith("/owner")) {
-            req.url = "/index.html";
-          }
-          next();
+          void handleApiMiddleware(req, res, next, { spaOwnerFallback: true });
         });
       },
     },

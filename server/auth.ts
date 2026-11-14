@@ -1,4 +1,3 @@
-import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
 const DEFAULT_JWT_SECRET =
@@ -98,28 +97,4 @@ export function recordLoginAttempt(ip: string): {
 
 export function clearFailedLogins(ip: string): void {
   loginAttempts.delete(ip);
-}
-
-export interface AuthenticatedRequest extends Request {
-  owner?: JwtOwnerPayload;
-}
-
-export function requireOwnerAuth(
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction,
-): void {
-  const header = req.headers.authorization || "";
-  const match = /^Bearer\s+(.+)$/i.exec(header);
-  if (!match || !match[1]) {
-    res.status(401).json({ error: "Authentication required." });
-    return;
-  }
-  const verified = verifyOwnerToken(match[1]);
-  if (!verified) {
-    res.status(401).json({ error: "Invalid or expired session. Please sign in again." });
-    return;
-  }
-  req.owner = verified;
-  next();
 }
