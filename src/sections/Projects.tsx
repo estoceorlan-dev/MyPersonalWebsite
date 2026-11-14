@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { ArrowUpRight, Check, Github, FolderOpen } from "lucide-react";
-import { projects, projectCategories } from "../data/projects";
+import { projectCategories } from "../data/projects";
 import type { Project, ProjectCategory } from "../data/projects";
+import { usePortfolio } from "../context/PortfolioContext";
 import { Reveal, SectionHeading } from "../components/Shared";
 import ProjectCard from "../components/ProjectCard";
 import ProjectCarousel from "../components/ProjectCarousel";
@@ -9,6 +10,8 @@ import ProjectVisual from "../components/ProjectVisual";
 import { Modal } from "../components/Modal";
 
 export default function Projects() {
+  const { content } = usePortfolio();
+  const { projects, sectionHeadings } = content;
   const [category, setCategory] = useState<ProjectCategory>("All projects");
   const [selected, setSelected] = useState<Project | null>(null);
   const [expanded, setExpanded] = useState(false);
@@ -27,9 +30,9 @@ export default function Projects() {
         <Reveal>
           <SectionHeading
             number="03"
-            label="Selected work"
-            title="From a thought to a thing."
-            description="Mobile applications, business systems, and machine learning experiments. Explore the code and the ideas behind each project."
+            label={sectionHeadings.projects.label}
+            title={sectionHeadings.projects.title}
+            description={sectionHeadings.projects.description}
           />
         </Reveal>
         <div

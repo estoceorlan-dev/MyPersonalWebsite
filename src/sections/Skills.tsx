@@ -7,7 +7,7 @@ import {
   Wrench,
   ArrowDownRight,
 } from "lucide-react";
-import { skillGroups } from "../data/skills";
+import { usePortfolio } from "../context/PortfolioContext";
 import { Reveal, SectionHeading } from "../components/Shared";
 
 const icons = {
@@ -19,6 +19,8 @@ const icons = {
   tools: Wrench,
 };
 export default function Skills() {
+  const { content } = usePortfolio();
+  const { skillGroups, sectionHeadings } = content;
   const hasSkills = skillGroups.some((group) => group.skills.length);
   return (
     <section id="skills" className="section" aria-label="Technical skills">
@@ -26,9 +28,9 @@ export default function Skills() {
         <Reveal>
           <SectionHeading
             number="02"
-            label="My toolkit"
-            title="The tools behind the ideas."
-            description="The languages, frameworks, and tools I work with across software development, databases, and everyday IT support."
+            label={sectionHeadings.skills.label}
+            title={sectionHeadings.skills.title}
+            description={sectionHeadings.skills.description}
           />
         </Reveal>
         <div className="skills-grid">

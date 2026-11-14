@@ -5,11 +5,16 @@ import {
   Code2,
   GraduationCap,
 } from "lucide-react";
-import { personal } from "../data/personal";
+import { usePortfolio, resolveMediaUrl } from "../context/PortfolioContext";
 import { Reveal, ResumeButton, SocialLinks } from "../components/Shared";
 import portrait from "../../assets/images/Portrait.jpg";
 
 export default function Hero() {
+  const { content } = usePortfolio();
+  const { personal } = content;
+  const portraitSrc = personal.portraitUrl
+    ? resolveMediaUrl(personal.portraitUrl)
+    : portrait;
   return (
     <section id="home" className="hero container" aria-labelledby="hero-title">
       <div className="hero-main">
@@ -20,7 +25,7 @@ export default function Hero() {
             {personal.aspiration}
           </p>
           <h1 id="hero-title">
-            Hello, I’m
+            {personal.heroGreeting || "Hello, I’m"}
             <br />
             <span>{personal.name}</span>
             <span className="heading-dot">.</span>
@@ -46,14 +51,14 @@ export default function Hero() {
             </span>
             <div className="portrait-frame">
               <img
-                src={portrait}
+                src={portraitSrc}
                 alt={personal.portraitAlt}
                 width="1050"
                 height="1498"
                 fetchPriority="high"
               />
               <span className="portrait-caption">
-                THE PERSON BEHIND THE PROJECTS
+                {personal.portraitCaption || "THE PERSON BEHIND THE PROJECTS"}
               </span>
             </div>
             <div className="availability">
@@ -65,8 +70,12 @@ export default function Hero() {
                 <GraduationCap size={23} />
               </span>
               <div>
-                <strong>Always a student.</strong>
-                <span>Always building something.</span>
+                <strong>
+                  {personal.heroBadgeTitle || "Always a student."}
+                </strong>
+                <span>
+                  {personal.heroBadgeSubtitle || "Always building something."}
+                </span>
               </div>
               <ArrowUpRight size={17} />
             </div>
@@ -78,10 +87,12 @@ export default function Hero() {
       </div>
       <div className="hero-bottom">
         <a href="#about">
-          <ArrowDown size={16} /> A little more about me
+          <ArrowDown size={16} />{" "}
+          {personal.heroBottomLinkText || "A little more about me"}
         </a>
         <span>
-          Learning with intention. Building with care.{" "}
+          {personal.heroBottomTagline ||
+            "Learning with intention. Building with care."}{" "}
           <ArrowDownRight size={18} />
         </span>
       </div>

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Menu, ArrowUpRight } from "lucide-react";
 import { motion } from "framer-motion";
-import { navigation, personal } from "../data/personal";
+import { navigation } from "../data/personal";
+import { usePortfolio } from "../context/PortfolioContext";
 import { useActiveSection } from "../hooks/useActiveSection";
 import { ResumeButton } from "./Shared";
 import { Modal } from "./Modal";
@@ -10,6 +11,8 @@ import { ThemeToggle } from "./ThemeToggle";
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const active = useActiveSection();
+  const { content } = usePortfolio();
+  const { personal } = content;
   return (
     <header className="site-header">
       <div className="container nav-inner">

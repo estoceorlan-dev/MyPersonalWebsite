@@ -376,3 +376,87 @@
     transition: none;
   }
 }
+
+/* Dark theme tokens for Owner Login & Owner Dashboard */
+:root[data-theme="dark"]
+  :is(
+    .owner-login-card,
+    .owner-tabs,
+    .owner-card,
+    .owner-kpi-card,
+    .owner-gallery-item
+  ) {
+  background: var(--surface);
+  border-color: var(--line);
+}
+:root[data-theme="dark"]
+  :is(
+    .owner-subcard,
+    .owner-stat-pill,
+    .owner-segmented,
+    .owner-chart-Callout,
+    .owner-day-stat,
+    .owner-date-picker-wrap input,
+    .owner-project-pill:not(.is-active),
+    .owner-chip-toggle:not(.is-checked)
+  ) {
+  background: var(--surface-raised);
+  border-color: var(--line);
+  color: var(--ink);
+}
+:root[data-theme="dark"]
+  :is(.owner-select, .owner-gallery-item input) {
+  background: #0d1119;
+  border-color: #46536a;
+  color: var(--ink);
+}
+:root[data-theme="dark"]
+  :is(
+    .owner-tab-btn.is-active,
+    .owner-project-pill.is-active,
+    .owner-segmented button[aria-pressed="true"]
+  ) {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0b1426;
+}
+:root[data-theme="dark"] .owner-project-pill.is-active small {
+  color: #0b1426cc;
+}
+:root[data-theme="dark"] .owner-alert-error {
+  background: #2c141b;
+  border-color: #6e2b3b;
+  color: #f8b4c0;
+}
+:root[data-theme="dark"] .owner-alert-success {
+  background: #13291d;
+  border-color: #2b6142;
+  color: #a8e5be;
+}
+:root[data-theme="dark"] .owner-unsaved-pill {
+  background: #2d2212;
+  border-color: #6b4e23;
+  color: #f5cb86;
+}
+:root[data-theme="dark"] .owner-delta-badge.is-positive {
+  background: #152e20;
+  color: #9ce0b2;
+}
+:root[data-theme="dark"] .owner-delta-badge.is-negative {
+  background: #31171e;
+  color: #f7a8b6;
+}
+:root[data-theme="dark"] .owner-bar-prev,
+:root[data-theme="dark"] .legend-dot.is-prev {
+  fill: #334056;
+  background: #334056;
+}
+:root[data-theme="dark"] .owner-bar-views,
+:root[data-theme="dark"] .legend-dot.is-views {
+  fill: #5573a6;
+  background: #5573a6;
+}
+:root[data-theme="dark"] .owner-hour-bar-track,
+:root[data-theme="dark"] .owner-device-bar {
+  background: #202838;
+}

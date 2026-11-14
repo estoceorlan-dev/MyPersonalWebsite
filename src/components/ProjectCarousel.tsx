@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { ProjectGalleryItem } from "../data/projects";
+import { resolveMediaUrl } from "../context/PortfolioContext";
 
 const AUTO_ADVANCE_MS = 3500;
 
@@ -76,7 +77,7 @@ export default function ProjectCarousel({
               aria-hidden={!isActive}
             >
               <img
-                src={item.src}
+                src={resolveMediaUrl(item.src)}
                 alt={item.alt}
                 loading={idx === 0 ? "eager" : "lazy"}
                 onLoad={(event) => {

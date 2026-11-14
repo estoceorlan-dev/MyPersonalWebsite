@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useId } from "react";
 import type { Project } from "../data/projects";
+import { resolveMediaUrl } from "../context/PortfolioContext";
 const coverIcons = {
   store: Store,
   flower: Flower2,
@@ -35,7 +36,7 @@ export default function ProjectVisual({ project }: { project: Project }) {
     return (
       <div className="project-visual project-visual-image">
         <img
-          src={project.image}
+          src={resolveMediaUrl(project.image)}
           alt={project.imageAlt || `${project.title} project preview`}
           loading="lazy"
           width="800"

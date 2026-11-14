@@ -10,7 +10,7 @@ import {
   Mail,
   Facebook,
 } from "lucide-react";
-import { personal } from "../data/personal";
+import { usePortfolio, resolveMediaUrl } from "../context/PortfolioContext";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { buildEmailComposeUrl } from "../utils/email";
 import { Modal } from "./Modal";
@@ -70,7 +70,9 @@ export function ResumeButton({
   compact?: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const content = (
+  const { content } = usePortfolio();
+  const { personal } = content;
+  const contentNode = (
     <>
       <Download size={compact ? 15 : 17} />
       <span>Download Resume</span>
@@ -80,16 +82,16 @@ export function ResumeButton({
     return (
       <a
         className={className}
-        href={personal.resumeUrl}
+        href={resolveMediaUrl(personal.resumeUrl)}
         download="Orlandone-Estoce-Resume.pdf"
       >
-        {content}
+        {contentNode}
       </a>
     );
   return (
     <>
       <button className={className} onClick={() => setOpen(true)}>
-        {content}
+        {contentNode}
       </button>
       <Modal
         open={open}
@@ -136,6 +138,8 @@ function WhatsAppIcon({ size = 18 }: { size?: number }) {
 
 export function SocialLinks({ labeled = false }: { labeled?: boolean }) {
   const isMobile = useIsMobile();
+  const { content } = usePortfolio();
+  const { personal } = content;
   const links = [
     { label: "GitHub", icon: Github, url: personal.socials.github },
     { label: "LinkedIn", icon: Linkedin, url: personal.socials.linkedin },

@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { ArrowUpRight, Check, Copy } from "lucide-react";
-import { personal } from "../data/personal";
+import { usePortfolio } from "../context/PortfolioContext";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { buildEmailComposeUrl } from "../utils/email";
 
@@ -9,6 +9,8 @@ type Fields = { name: string; email: string; subject: string; message: string };
 const initial: Fields = { name: "", email: "", subject: "", message: "" };
 export default function ContactForm() {
   const isMobile = useIsMobile();
+  const { content } = usePortfolio();
+  const { personal } = content;
   const [fields, setFields] = useState(initial);
   const [errors, setErrors] = useState<Partial<Fields>>({});
   const [draft, setDraft] = useState("");

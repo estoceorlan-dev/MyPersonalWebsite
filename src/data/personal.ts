@@ -16,7 +16,29 @@ export const personal = {
   phoneHref: "+639945581412",
   resumeUrl: "/resume.pdf",
   siteUrl: "https://www.orlanestoce.online",
+  portraitUrl: "",
   portraitAlt: "Portrait of Orlandone Estoce",
+  portraitCaption: "THE PERSON BEHIND THE PROJECTS",
+  heroGreeting: "Hello, I’m",
+  heroBadgeTitle: "Always a student.",
+  heroBadgeSubtitle: "Always building something.",
+  heroBottomLinkText: "A little more about me",
+  heroBottomTagline: "Learning with intention. Building with care.",
+  aboutLeadLine1: "Curious by nature.",
+  aboutLeadLine2: "Precise by",
+  aboutLeadHighlight: "practice.",
+  educationCardHeader: "CURRENTLY LEARNING",
+  occupationStatusPill: "Student",
+  experienceCalloutTitle: "The next chapter could be with your team.",
+  experienceCalloutSubtitle: "Looking for an IT internship and room to grow.",
+  contactEyebrow: "Let’s connect",
+  contactHeadingLine1: "Good things start",
+  contactHeadingLine2: "with a",
+  contactHeadingHighlight: "hello.",
+  contactPrompt:
+    "Interested in working together or offering an internship opportunity? I’d love to hear from you.",
+  footerTagline: "Learning with intention. Building with care.",
+  copyrightYear: "2026",
   seoDescription:
     "Orlandone Estoce is a BSIT student at Buenavista Community College and aspiring software developer. Explore his web, mobile, database, and machine learning projects, IT support experience, and internship availability.",
   about: [
@@ -60,3 +82,50 @@ export const navigation = [
   { id: "certifications", label: "Credentials" },
   { id: "contact", label: "Contact" },
 ];
+
+export type PersonalData = typeof personal;
+
+export type SectionHeadingConfig = {
+  label: string;
+  title: string;
+  description?: string;
+};
+
+export type SectionHeadings = {
+  about: SectionHeadingConfig;
+  skills: SectionHeadingConfig;
+  projects: SectionHeadingConfig;
+  experience: SectionHeadingConfig;
+  certifications: SectionHeadingConfig;
+};
+
+export const defaultSectionHeadings: SectionHeadings = {
+  about: {
+    label: "A little about me",
+    title: "Curiosity is where it starts.",
+  },
+  skills: {
+    label: "My toolkit",
+    title: "The tools behind the ideas.",
+    description:
+      "The languages, frameworks, and tools I work with across software development, databases, and everyday IT support.",
+  },
+  projects: {
+    label: "Selected work",
+    title: "From a thought to a thing.",
+    description:
+      "Mobile applications, business systems, and machine learning experiments. Explore the code and the ideas behind each project.",
+  },
+  experience: {
+    label: "The journey so far",
+    title: "Building a foundation.",
+    description:
+      "An IT education supported by hands-on software development, business administration, and technical support experience.",
+  },
+  certifications: {
+    label: "Credentials & eligibility",
+    title: "Learning. Applied.",
+    description:
+      "Professional eligibility alongside a growing foundation in information technology.",
+  },
+};

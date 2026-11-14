@@ -1,7 +1,9 @@
+import "dotenv/config";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { personal } from "./src/data/personal";
+import { createApiApp } from "./server/app";
 
 const escapeHtml = (value: string) =>
   value.replace(
@@ -16,6 +18,40 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    {
+      name: "portfolio-api",
+      configureServer(server) {
+        const apiApp = createApiApp();
+        server.middlewares.use((req, res, next) => {
+          if (req.url?.startsWith("/api/")) {
+            (apiApp as unknown as (
+              req: unknown,
+              res: unknown,
+              next: () => void,
+            ) => void)(req, res, next);
+            return;
+          }
+          next();
+        });
+      },
+      configurePreviewServer(server) {
+        const apiApp = createApiApp();
+        server.middlewares.use((req, res, next) => {
+          if (req.url?.startsWith("/api/")) {
+            (apiApp as unknown as (
+              req: unknown,
+              res: unknown,
+              next: () => void,
+            ) => void)(req, res, next);
+            return;
+          }
+          if (req.url?.startsWith("/owner")) {
+            req.url = "/index.html";
+          }
+          next();
+        });
+      },
+    },
     {
       name: "portfolio-metadata",
       transformIndexHtml(html) {

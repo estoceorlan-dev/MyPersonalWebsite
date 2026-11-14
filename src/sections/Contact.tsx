@@ -1,5 +1,5 @@
 import { ArrowUpRight, Mail, Phone } from "lucide-react";
-import { personal } from "../data/personal";
+import { usePortfolio } from "../context/PortfolioContext";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { buildEmailComposeUrl } from "../utils/email";
 import { Reveal, SocialLinks } from "../components/Shared";
@@ -7,6 +7,8 @@ import ContactForm from "../components/ContactForm";
 
 export default function Contact() {
   const isMobile = useIsMobile();
+  const { content } = usePortfolio();
+  const { personal } = content;
   const emailHref = buildEmailComposeUrl({ to: personal.email, isMobile });
   return (
     <section
@@ -17,12 +19,13 @@ export default function Contact() {
       <div className="container contact-grid">
         <Reveal className="contact-copy">
           <p className="eyebrow">
-            <span>06</span> Let’s connect
+            <span>06</span> {personal.contactEyebrow || "Let’s connect"}
           </p>
           <h2>
-            Good things start
+            {personal.contactHeadingLine1 || "Good things start"}
             <br />
-            with a <span>hello.</span>
+            {personal.contactHeadingLine2 || "with a"}{" "}
+            <span>{personal.contactHeadingHighlight || "hello."}</span>
             <ArrowUpRight
               className="contact-arrow"
               size={44}
@@ -30,8 +33,8 @@ export default function Contact() {
             />
           </h2>
           <p>
-            Interested in working together or offering an internship
-            opportunity? I’d love to hear from you.
+            {personal.contactPrompt ||
+              "Interested in working together or offering an internship opportunity? I’d love to hear from you."}
           </p>
           <div className="contact-email">
             <Mail size={21} />

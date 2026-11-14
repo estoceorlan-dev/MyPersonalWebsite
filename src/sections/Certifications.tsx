@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Award, ArrowUpRight, Plus } from "lucide-react";
-import { certifications, achievements } from "../data/certifications";
 import type { Certification } from "../data/certifications";
+import { usePortfolio, resolveMediaUrl } from "../context/PortfolioContext";
 import { Reveal, SectionHeading } from "../components/Shared";
 import { Modal } from "../components/Modal";
 
 export default function Certifications() {
+  const { content } = usePortfolio();
+  const { certifications, achievements, sectionHeadings } = content;
   const [expanded, setExpanded] = useState(false);
   const [selected, setSelected] = useState<Certification | null>(null);
   return (
@@ -18,9 +20,9 @@ export default function Certifications() {
         <Reveal>
           <SectionHeading
             number="05"
-            label="Credentials & eligibility"
-            title="Learning. Applied."
-            description="Professional eligibility alongside a growing foundation in information technology."
+            label={sectionHeadings.certifications.label}
+            title={sectionHeadings.certifications.title}
+            description={sectionHeadings.certifications.description}
           />
         </Reveal>
         <div className="eligibility-list">
@@ -59,7 +61,7 @@ export default function Certifications() {
                   >
                     {certificate.image ? (
                       <img
-                        src={certificate.image}
+                        src={resolveMediaUrl(certificate.image)}
                         alt={`${certificate.title} certificate`}
                         loading="lazy"
                       />
@@ -105,7 +107,7 @@ export default function Certifications() {
             {selected.image && (
               <img
                 className="certificate-full"
-                src={selected.image}
+                src={resolveMediaUrl(selected.image)}
                 alt={`${selected.title} certificate`}
               />
             )}
@@ -122,7 +124,7 @@ export default function Certifications() {
               {selected.pdfUrl && (
                 <a
                   className="button button-primary"
-                  href={selected.pdfUrl}
+                  href={resolveMediaUrl(selected.pdfUrl)}
                   target="_blank"
                   rel="noopener noreferrer"
                 >

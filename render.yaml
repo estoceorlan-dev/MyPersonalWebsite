@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: orlandone-portfolio-api
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: OWNER_EMAIL
+        value: estoce.orlan@gmail.com
+      - key: OWNER_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        value: https://www.orlanestoce.online

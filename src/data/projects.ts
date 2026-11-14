@@ -50,10 +50,15 @@ export type Project = {
   notes?: string[];
 };
 
-const projectAssetFiles = import.meta.glob<string>(
-  "../../assets/images/*/*.{png,jpg,jpeg,webp,avif,svg}",
-  { eager: true, import: "default" },
-);
+let projectAssetFiles: Record<string, string> = {};
+try {
+  projectAssetFiles = import.meta.glob<string>(
+    "../../assets/images/*/*.{png,jpg,jpeg,webp,avif,svg}",
+    { eager: true, import: "default" },
+  );
+} catch {
+  projectAssetFiles = {};
+}
 
 function normalizeKey(value: string): string {
   return value
@@ -74,7 +79,7 @@ function formatSlideLabel(fileName: string): string {
   return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
 }
 
-function attachProjectAssets(items: Project[]): Project[] {
+export function attachProjectAssets(items: Project[]): Project[] {
   const byFolder = new Map<string, { fileName: string; url: string }[]>();
   for (const [filePath, url] of Object.entries(projectAssetFiles)) {
     const parts = filePath.split("/");
@@ -151,7 +156,7 @@ function attachProjectAssets(items: Project[]): Project[] {
 }
 
 // Repository-backed project scope; only resume-confirmed contributions are attributed.
-const rawProjects: Project[] = [
+export const rawProjects: Project[] = [
   {
     id: "vitalysync",
     title: "VitalySync",

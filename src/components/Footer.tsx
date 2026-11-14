@@ -1,8 +1,12 @@
 import { ArrowUp } from "lucide-react";
-import { personal } from "../data/personal";
+import { usePortfolio } from "../context/PortfolioContext";
+import { navigateTo } from "../utils/router";
 import { SocialLinks } from "./Shared";
 
 export default function Footer() {
+  const { content } = usePortfolio();
+  const { personal } = content;
+  const year = personal.copyrightYear || String(new Date().getFullYear());
   return (
     <footer className="site-footer">
       <div className="container">
@@ -15,7 +19,10 @@ export default function Footer() {
               </span>
               <strong>{personal.name}</strong>
             </a>
-            <p>Learning with intention. Building with care.</p>
+            <p>
+              {personal.footerTagline ||
+                "Learning with intention. Building with care."}
+            </p>
           </div>
           <nav aria-label="Footer navigation">
             <a href="#about">About</a>
@@ -25,9 +32,23 @@ export default function Footer() {
           <SocialLinks />
         </div>
         <div className="footer-bottom">
-          <span>
-            © {new Date().getFullYear()} {personal.name}. All rights reserved.
-          </span>
+          <a
+            href="/owner/login"
+            className="footer-copyright-link"
+            onClick={(event) => {
+              if (
+                !event.metaKey &&
+                !event.ctrlKey &&
+                !event.shiftKey &&
+                !event.altKey
+              ) {
+                event.preventDefault();
+                navigateTo("/owner/login");
+              }
+            }}
+          >
+            © {year} {personal.name}. All rights reserved.
+          </a>
           <a href="#home">
             Back to top <ArrowUp size={16} />
           </a>

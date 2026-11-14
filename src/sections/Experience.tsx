@@ -1,9 +1,11 @@
 import { ArrowUpRight } from "lucide-react";
-import { education, experience } from "../data/experience";
+import { usePortfolio } from "../context/PortfolioContext";
 import { Reveal, SectionHeading } from "../components/Shared";
 import Timeline from "../components/Timeline";
 
 export default function Experience() {
+  const { content } = usePortfolio();
+  const { education, experience, personal, sectionHeadings } = content;
   return (
     <section
       id="experience"
@@ -14,9 +16,9 @@ export default function Experience() {
         <Reveal>
           <SectionHeading
             number="04"
-            label="The journey so far"
-            title="Building a foundation."
-            description="An IT education supported by hands-on software development, business administration, and technical support experience."
+            label={sectionHeadings.experience.label}
+            title={sectionHeadings.experience.title}
+            description={sectionHeadings.experience.description}
           />
         </Reveal>
         <Reveal>
@@ -24,8 +26,14 @@ export default function Experience() {
           <div className="next-chapter">
             <span className="status-dot" />
             <div>
-              <strong>The next chapter could be with your team.</strong>
-              <p>Looking for an IT internship and room to grow.</p>
+              <strong>
+                {personal.experienceCalloutTitle ||
+                  "The next chapter could be with your team."}
+              </strong>
+              <p>
+                {personal.experienceCalloutSubtitle ||
+                  "Looking for an IT internship and room to grow."}
+              </p>
             </div>
             <a href="#contact" className="text-link">
               Let’s talk <ArrowUpRight size={17} />
