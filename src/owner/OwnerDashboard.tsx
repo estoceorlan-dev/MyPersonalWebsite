@@ -39,6 +39,7 @@ import { ThemeToggle } from "../components/ThemeToggle";
 import { Modal } from "../components/Modal";
 import { navigateTo } from "../utils/router";
 import AnalyticsPanel from "./AnalyticsPanel";
+import ProjectOrderList from "./ProjectOrderList";
 import { OWNER_EMAIL_KEY, OWNER_TOKEN_KEY } from "./OwnerLogin";
 import portraitDefault from "../../assets/images/Portrait.jpg";
 
@@ -120,6 +121,11 @@ export default function OwnerDashboard({
     text: string;
   } | null>(null);
   const [activeProjectIndex, setActiveProjectIndex] = useState(0);
+  const [projectEditorOpen, setProjectEditorOpen] = useState(false);
+  const [projectEditorMode, setProjectEditorMode] = useState<"create" | "edit">(
+    "edit",
+  );
+  const [projectOrderMessage, setProjectOrderMessage] = useState("");
   const [confirmAction, setConfirmAction] = useState<
     "save" | "restore" | "view-portfolio" | "logout" | null
   >(null);
@@ -154,7 +160,21 @@ export default function OwnerDashboard({
     setSaving(true);
     setStatusMessage(null);
     try {
-      const saved = await savePortfolio(draft, token);
+      const saved = await savePortfolio(
+        {
+          ...draft,
+          projects: draft.projects.map((project) => ({
+            ...project,
+            additionalRepositories: project.additionalRepositories
+              ?.filter((repository) => repository.url.trim())
+              .map((repository, index) => ({
+                label: repository.label.trim() || `View repository ${index + 2}`,
+                url: repository.url.trim(),
+              })),
+          })),
+        },
+        token,
+      );
       setDraft(structuredClone(saved));
       setDirty(false);
       setStatusMessage({
@@ -286,6 +306,25 @@ export default function OwnerDashboard({
 
   const currentProject: Project | undefined =
     draft.projects[activeProjectIndex] ?? draft.projects[0];
+
+  function reorderProjects(ids: string[]) {
+    const selectedId = currentProject?.id;
+    const selectedIndex = ids.indexOf(selectedId ?? "");
+    updateDraft((d) => {
+      const byId = new Map(d.projects.map((project) => [project.id, project]));
+      d.projects = ids.map((id) => byId.get(id)!);
+      return d;
+    });
+    setActiveProjectIndex(Math.max(0, selectedIndex));
+    setProjectOrderMessage("Project order updated. Save changes to publish.");
+  }
+
+  function moveCurrentProject(offset: number) {
+    const ids = draft.projects.map((project) => project.id);
+    const [id] = ids.splice(activeProjectIndex, 1);
+    ids.splice(activeProjectIndex + offset, 0, id!);
+    reorderProjects(ids);
+  }
 
   return (
     <div className="owner-shell">
@@ -1375,7 +1414,7 @@ export default function OwnerDashboard({
                       <p className="eyebrow">
                         {draft.projects.length} Portfolio Projects
                       </p>
-                      <h3>Select or Add a Project</h3>
+                      <h3>Project Library</h3>
                     </div>
                     <button
                       type="button"
@@ -1409,37 +1448,53 @@ export default function OwnerDashboard({
                           return d;
                         });
                         setActiveProjectIndex(0);
+                        setProjectEditorMode("create");
+                        setProjectEditorOpen(true);
                       }}
                     >
                       <Plus size={15} /> Add new project
                     </button>
                   </div>
 
-                  {/* Project Selector Chips */}
-                  <div
-                    className="owner-project-selector"
-                    role="group"
-                    aria-label="Choose project to edit"
-                  >
-                    {draft.projects.map((proj, idx) => (
-                      <button
-                        key={proj.id || idx}
-                        type="button"
-                        className={`owner-project-pill ${activeProjectIndex === idx ? "is-active" : ""}`}
-                        onClick={() => setActiveProjectIndex(idx)}
-                      >
-                        <small>{String(idx + 1).padStart(2, "0")}</small>
-                        <span>{proj.title}</span>
-                      </button>
-                    ))}
-                  </div>
+                  <p id="project-order-help" className="muted mt-3">
+                    Tap a project to edit. Drag the handles or use the arrows to
+                    sort. The first six projects are featured.
+                  </p>
+                  <ProjectOrderList
+                    projects={draft.projects}
+                    activeProjectId={
+                      projectEditorOpen ? currentProject?.id : undefined
+                    }
+                    onSelect={(index) => {
+                      setActiveProjectIndex(index);
+                      setProjectEditorMode("edit");
+                      setStatusMessage(null);
+                      setProjectEditorOpen(true);
+                    }}
+                    onReorder={reorderProjects}
+                  />
+                  <p className="sr-only" role="status">
+                    {projectOrderMessage}
+                  </p>
 
-                  {currentProject && (
-                    <div className="owner-subcard mt-4">
+                  {currentProject && projectEditorOpen && (
+                    <Modal
+                      open={projectEditorOpen}
+                      onClose={() => setProjectEditorOpen(false)}
+                      title={
+                        projectEditorMode === "create"
+                          ? "Add new project"
+                          : "Edit project"
+                      }
+                      className="owner-project-modal"
+                    >
+                    <div className="owner-project-editor">
                       <div className="owner-subcard-top">
                         <div>
                           <span className="eyebrow">
-                            Editing Project #{activeProjectIndex + 1}
+                            {projectEditorMode === "create"
+                              ? "New Project"
+                              : `Editing Project #${activeProjectIndex + 1}`}
                           </span>
                           <h4>{currentProject.title}</h4>
                         </div>
@@ -1449,16 +1504,7 @@ export default function OwnerDashboard({
                             className="icon-button"
                             disabled={activeProjectIndex === 0}
                             aria-label="Move project earlier"
-                            onClick={() => {
-                              const idx = activeProjectIndex;
-                              updateDraft((d) => {
-                                const temp = d.projects[idx - 1]!;
-                                d.projects[idx - 1] = d.projects[idx]!;
-                                d.projects[idx] = temp;
-                                return d;
-                              });
-                              setActiveProjectIndex(idx - 1);
-                            }}
+                            onClick={() => moveCurrentProject(-1)}
                           >
                             <ArrowUp size={15} />
                           </button>
@@ -1469,16 +1515,7 @@ export default function OwnerDashboard({
                               activeProjectIndex === draft.projects.length - 1
                             }
                             aria-label="Move project later"
-                            onClick={() => {
-                              const idx = activeProjectIndex;
-                              updateDraft((d) => {
-                                const temp = d.projects[idx + 1]!;
-                                d.projects[idx + 1] = d.projects[idx]!;
-                                d.projects[idx] = temp;
-                                return d;
-                              });
-                              setActiveProjectIndex(idx + 1);
-                            }}
+                            onClick={() => moveCurrentProject(1)}
                           >
                             <ArrowDown size={15} />
                           </button>
@@ -1492,6 +1529,7 @@ export default function OwnerDashboard({
                                 return d;
                               });
                               setActiveProjectIndex(Math.max(0, idx - 1));
+                              setProjectEditorOpen(false);
                             }}
                           >
                             <Trash2 size={14} /> Delete project
@@ -1499,6 +1537,14 @@ export default function OwnerDashboard({
                         </div>
                       </div>
 
+                      {statusMessage && (
+                        <div
+                          className={`owner-alert mt-4 owner-alert-${statusMessage.type}`}
+                          role="status"
+                        >
+                          <span>{statusMessage.text}</span>
+                        </div>
+                      )}
                       <div className="form-grid mt-4">
                         <div className="form-field">
                           <label htmlFor="proj-title">Project Title</label>
@@ -1667,6 +1713,90 @@ export default function OwnerDashboard({
                               })
                             }
                           />
+                        </div>
+                        <div className="field-wide owner-repositories">
+                          <div className="owner-card-header-row">
+                            <span className="owner-field-label">
+                              Additional repositories
+                            </span>
+                            <button
+                              type="button"
+                              className="button button-secondary"
+                              onClick={() =>
+                                updateDraft((d) => {
+                                  const project = d.projects[activeProjectIndex]!;
+                                  project.additionalRepositories ??= [];
+                                  project.additionalRepositories.push({
+                                    label: "",
+                                    url: "",
+                                  });
+                                  return d;
+                                })
+                              }
+                            >
+                              <Plus size={14} /> Add another repository
+                            </button>
+                          </div>
+                          <p className="muted">
+                            Add separate frontend, backend, or related repositories.
+                            Give each link a label for the project details.
+                          </p>
+                          {currentProject.additionalRepositories?.map((repository, index) => (
+                            <div className="owner-repository-row" key={index}>
+                              <div className="form-field">
+                                <label htmlFor={`proj-repo-label-${index}`}>
+                                  Repository {index + 2} Label
+                                </label>
+                                <input
+                                  id={`proj-repo-label-${index}`}
+                                  type="text"
+                                  placeholder="Backend repository"
+                                  value={repository.label}
+                                  onChange={(event) =>
+                                    updateDraft((d) => {
+                                      const target = d.projects[activeProjectIndex]!
+                                        .additionalRepositories![index]!;
+                                      target.label = event.target.value;
+                                      return d;
+                                    })
+                                  }
+                                />
+                              </div>
+                              <div className="form-field">
+                                <label htmlFor={`proj-repo-url-${index}`}>
+                                  Repository {index + 2} URL
+                                </label>
+                                <input
+                                  id={`proj-repo-url-${index}`}
+                                  type="url"
+                                  placeholder="https://github.com/username/backend"
+                                  value={repository.url}
+                                  onChange={(event) =>
+                                    updateDraft((d) => {
+                                      const target = d.projects[activeProjectIndex]!
+                                        .additionalRepositories![index]!;
+                                      target.url = event.target.value;
+                                      return d;
+                                    })
+                                  }
+                                />
+                              </div>
+                              <button
+                                type="button"
+                                className="icon-button owner-delete-btn"
+                                aria-label={`Remove repository ${index + 2}`}
+                                onClick={() =>
+                                  updateDraft((d) => {
+                                    const target = d.projects[activeProjectIndex]!;
+                                    target.additionalRepositories!.splice(index, 1);
+                                    return d;
+                                  })
+                                }
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            </div>
+                          ))}
                         </div>
                         <div className="form-field">
                           <label htmlFor="proj-demo">Live Demo URL</label>
@@ -2004,6 +2134,30 @@ export default function OwnerDashboard({
                         </div>
                       </div>
                     </div>
+                    <div className="owner-project-modal-footer">
+                      <p className="muted">Edits stay in your draft. Save changes to publish.</p>
+                      <div className="owner-inline-actions">
+                        <button
+                          type="button"
+                          className="button button-secondary"
+                          onClick={() => setProjectEditorOpen(false)}
+                        >
+                          Done
+                        </button>
+                        <button
+                          type="button"
+                          className="button button-primary"
+                          disabled={saving || uploadingField !== null}
+                          onClick={() => {
+                            setProjectEditorOpen(false);
+                            setConfirmAction("save");
+                          }}
+                        >
+                          <Save size={15} /> Save changes
+                        </button>
+                      </div>
+                    </div>
+                    </Modal>
                   )}
                 </div>
               </div>

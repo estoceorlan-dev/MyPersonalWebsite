@@ -397,7 +397,7 @@
     .owner-chart-Callout,
     .owner-day-stat,
     .owner-date-picker-wrap input,
-    .owner-project-pill:not(.is-active),
+    .owner-project-row:not(.is-active),
     .owner-chip-toggle:not(.is-checked)
   ) {
   background: var(--surface-raised);
@@ -413,15 +413,11 @@
 :root[data-theme="dark"]
   :is(
     .owner-tab-btn.is-active,
-    .owner-project-pill.is-active,
     .owner-segmented button[aria-pressed="true"]
   ) {
   background: var(--accent);
   border-color: var(--accent);
   color: #0b1426;
-}
-:root[data-theme="dark"] .owner-project-pill.is-active small {
-  color: #0b1426cc;
 }
 :root[data-theme="dark"] .owner-alert-error {
   background: #2c141b;
