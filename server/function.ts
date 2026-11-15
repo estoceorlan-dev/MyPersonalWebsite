@@ -81,13 +81,16 @@ function getClientIp(request: Request): string {
   return "127.0.0.1";
 }
 
-function getVisitorHashFromRequest(request: Request): string {
+function getVisitorHashFromRequest(
+  request: Request,
+  clientVid?: string,
+): string {
+  const vid = (clientVid || "").trim().slice(0, 120);
   const ip = getClientIp(request);
   const ua = request.headers.get("user-agent") || "browser";
-  const daySalt = new Date().toISOString().slice(0, 10);
   return crypto
     .createHash("sha256")
-    .update(`${ip}|${ua}|${daySalt}`)
+    .update(`${vid || ip}|${ua}`)
     .digest("hex")
     .slice(0, 24);
 }
@@ -304,17 +307,20 @@ export default {
       if (method === "GET" && pathname === "/api/portfolio") {
         const content = await getPortfolioContent();
         if (url.searchParams.get("visit") === "1") {
-          const rawDevice = url.searchParams.get("device") || "desktop";
-          const deviceType =
-            rawDevice === "mobile" || rawDevice === "tablet"
-              ? rawDevice
-              : "desktop";
           const visitPath = (url.searchParams.get("path") || "/").slice(0, 120);
-          await recordVisit({
-            visitorHash: getVisitorHashFromRequest(request),
-            path: visitPath,
-            deviceType,
-          });
+          if (!visitPath.startsWith("/owner")) {
+            const rawDevice = url.searchParams.get("device") || "desktop";
+            const deviceType =
+              rawDevice === "mobile" || rawDevice === "tablet"
+                ? rawDevice
+                : "desktop";
+            const clientVid = url.searchParams.get("vid") || "";
+            await recordVisit({
+              visitorHash: getVisitorHashFromRequest(request, clientVid),
+              path: visitPath,
+              deviceType,
+            });
+          }
         }
         return jsonResponse(request, {
           content,
@@ -447,14 +453,18 @@ export default {
 
       // 10. Visitor tracking: GET /api/analytics/track
       if (method === "GET" && pathname === "/api/analytics/track") {
+        const visitPath = (url.searchParams.get("path") || "/").slice(0, 120);
+        if (visitPath.startsWith("/owner")) {
+          return jsonResponse(request, { tracked: false });
+        }
         const rawDevice = url.searchParams.get("device") || "desktop";
         const deviceType =
           rawDevice === "mobile" || rawDevice === "tablet"
             ? rawDevice
             : "desktop";
-        const visitPath = (url.searchParams.get("path") || "/").slice(0, 120);
+        const clientVid = url.searchParams.get("vid") || "";
         await recordVisit({
-          visitorHash: getVisitorHashFromRequest(request),
+          visitorHash: getVisitorHashFromRequest(request, clientVid),
           path: visitPath,
           deviceType,
         });

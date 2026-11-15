@@ -112,12 +112,13 @@ function ComparisonSvgChart({
 
   if (!points.length) return null;
 
-  const maxVal = Math.max(
-    10,
+  const rawMax = Math.max(
+    0,
     ...points.map((p) =>
       Math.max(p.views, p.uniqueVisitors, p.previousViews || 0),
     ),
   );
+  const maxVal = Math.max(4, Math.ceil(rawMax / 4) * 4);
 
   const activePoint =
     hoveredIndex !== null && points[hoveredIndex]
@@ -701,7 +702,11 @@ export default function AnalyticsPanel({ token }: { token: string }) {
                     </span>
                   </div>
                   <div className="owner-device-bar">
-                    <div style={{ width: `${Math.max(4, pct)}%` }} />
+                    <div
+                      style={{
+                        width: count > 0 ? `${Math.max(4, pct)}%` : "0%",
+                      }}
+                    />
                   </div>
                 </div>
               );

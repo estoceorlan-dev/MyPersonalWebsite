@@ -144,7 +144,7 @@ const PORTFOLIO_CACHE_TTL_MS = 30_000;
 let memoryOwner: OwnerUser | null = null;
 let memoryContent: SeededPortfolioContent = getInitialSeedContent();
 const memoryMedia = new Map<string, MediaAssetRecord>();
-const memoryVisits: VisitRecord[] = [];
+let memoryVisits: VisitRecord[] = [];
 
 function normalizeNeonUrl(raw: string): string {
   const trimmed = raw.trim();
@@ -234,54 +234,6 @@ function parseDateKeyUTC(dateStr: string): Date {
   return new Date(
     Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])),
   );
-}
-
-function seedBaselineVisits(): VisitRecord[] {
-  const now = new Date();
-  const todayUTC = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
-  );
-  const seeded: VisitRecord[] = [];
-  const devices: ("desktop" | "mobile" | "tablet")[] = [
-    "desktop",
-    "mobile",
-    "desktop",
-    "desktop",
-    "mobile",
-    "tablet",
-  ];
-
-  // Generate deterministic historical visits across the past 400 days so daily, weekly, monthly, and yearly charts have realistic comparison baselines
-  for (let offset = 400; offset >= 0; offset--) {
-    const d = addDaysUTC(todayUTC, -offset);
-    const dateKey = formatDateKey(d);
-    const daySeed = (offset * 17 + d.getUTCDay() * 7 + d.getUTCDate() * 3) % 11;
-    const visitorCount = offset === 0 ? 6 : 2 + (daySeed % 7);
-
-    for (let v = 0; v < visitorCount; v++) {
-      const visitorHash = `seed-v-${dateKey}-${v}`;
-      const hour = (8 + v * 2 + (offset % 5)) % 22;
-      const deviceType = devices[(offset + v) % devices.length]!;
-      seeded.push({
-        visitDate: dateKey,
-        visitHour: hour,
-        visitorHash,
-        path: "/",
-        deviceType,
-      });
-      // Some visitors view multiple sections/pages
-      if ((v + offset) % 2 === 0) {
-        seeded.push({
-          visitDate: dateKey,
-          visitHour: (hour + 1) % 24,
-          visitorHash,
-          path: "/#projects",
-          deviceType,
-        });
-      }
-    }
-  }
-  return seeded;
 }
 
 export async function initStorage(): Promise<"neon" | "memory"> {
@@ -386,23 +338,9 @@ export async function initStorage(): Promise<"neon" | "memory"> {
           };
         }
 
-        const existingVisits = await pool.query(
-          "SELECT id FROM portfolio_visits LIMIT 1",
+        await pool.query(
+          "DELETE FROM portfolio_visits WHERE visitor_hash LIKE 'seed-v-%'",
         );
-        if (existingVisits.rowCount === 0) {
-          const baseline = seedBaselineVisits();
-          const dates = baseline.map((v) => v.visitDate);
-          const hours = baseline.map((v) => v.visitHour);
-          const hashes = baseline.map((v) => v.visitorHash);
-          const paths = baseline.map((v) => v.path);
-          const devices = baseline.map((v) => v.deviceType);
-
-          await pool.query(
-            `INSERT INTO portfolio_visits (visit_date, visit_hour, visitor_hash, path, device_type)
-             SELECT * FROM UNNEST($1::date[], $2::smallint[], $3::text[], $4::text[], $5::text[])`,
-            [dates, hours, hashes, paths, devices],
-          );
-        }
 
         activeMode = "neon";
         initialized = true;
@@ -424,9 +362,6 @@ export async function initStorage(): Promise<"neon" | "memory"> {
       updatedAt: new Date().toISOString(),
     };
     memoryContent = getInitialSeedContent();
-    if (memoryVisits.length === 0) {
-      memoryVisits.push(...seedBaselineVisits());
-    }
     activeMode = "memory";
     initialized = true;
     return activeMode;
@@ -680,6 +615,16 @@ export async function recordVisit(input: {
     path: input.path,
     deviceType: input.deviceType,
   });
+}
+
+export async function deleteVisitsByHash(visitorHash: string): Promise<void> {
+  await initStorage();
+  if (pool && activeMode === "neon") {
+    await pool.query("DELETE FROM portfolio_visits WHERE visitor_hash = $1", [
+      visitorHash,
+    ]);
+  }
+  memoryVisits = memoryVisits.filter((v) => v.visitorHash !== visitorHash);
 }
 
 function calcChangePct(current: number, previous: number): number {

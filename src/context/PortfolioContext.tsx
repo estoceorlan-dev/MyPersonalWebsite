@@ -218,7 +218,24 @@ export function mergePortfolioContent(
 }
 
 const STORAGE_KEY = "portfolio-content-cache-v1";
-const VISIT_SESSION_KEY = "portfolio-visit-tracked-v1";
+const VISITOR_ID_KEY = "portfolio-visitor-id-v1";
+const VISIT_DEBOUNCE_KEY = "portfolio-visit-last-ts";
+const VISIT_DEBOUNCE_MS = 2500;
+
+function getOrCreateVisitorId(): string {
+  try {
+    const existing = localStorage.getItem(VISITOR_ID_KEY)?.trim();
+    if (existing) return existing;
+    const generated =
+      typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+        ? crypto.randomUUID()
+        : `v-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+    localStorage.setItem(VISITOR_ID_KEY, generated);
+    return generated;
+  } catch {
+    return "";
+  }
+}
 
 type PortfolioContextValue = {
   content: PortfolioContent;
@@ -309,8 +326,11 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
 
       if (!isOwnerRoute && typeof window !== "undefined") {
         try {
-          if (!sessionStorage.getItem(VISIT_SESSION_KEY)) {
+          const lastTs = Number(sessionStorage.getItem(VISIT_DEBOUNCE_KEY) || "0");
+          const now = Date.now();
+          if (!Number.isFinite(lastTs) || now - lastTs >= VISIT_DEBOUNCE_MS) {
             shouldTrackVisit = true;
+            sessionStorage.setItem(VISIT_DEBOUNCE_KEY, String(now));
           }
         } catch {
           shouldTrackVisit = true;
@@ -322,6 +342,10 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
         params.set("visit", "1");
         params.set("path", window.location.pathname || "/");
         params.set("device", detectDeviceType());
+        const vid = getOrCreateVisitorId();
+        if (vid) {
+          params.set("vid", vid);
+        }
       }
       const query = params.toString();
       const response = await fetch(
@@ -338,13 +362,6 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
         }
         if (payload?.storageMode === "neon" || payload?.storageMode === "memory") {
           setStorageMode(payload.storageMode);
-        }
-        if (shouldTrackVisit) {
-          try {
-            sessionStorage.setItem(VISIT_SESSION_KEY, "1");
-          } catch {
-            // Ignore storage errors
-          }
         }
       }
     } catch {
