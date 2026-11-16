@@ -40,6 +40,9 @@ import { Modal } from "../components/Modal";
 import { navigateTo } from "../utils/router";
 import AnalyticsPanel from "./AnalyticsPanel";
 import ProjectOrderList from "./ProjectOrderList";
+import ProjectGalleryEditor from "./ProjectGalleryEditor";
+import OwnerEditor from "./OwnerEditor";
+import type { ActiveOwnerEditor, OwnerEditorControls } from "./OwnerEditor";
 import { OWNER_EMAIL_KEY, OWNER_TOKEN_KEY } from "./OwnerLogin";
 import portraitDefault from "../../assets/images/Portrait.jpg";
 
@@ -126,6 +129,7 @@ export default function OwnerDashboard({
     "edit",
   );
   const [projectOrderMessage, setProjectOrderMessage] = useState("");
+  const [activeEditor, setActiveEditor] = useState<ActiveOwnerEditor | null>(null);
   const [confirmAction, setConfirmAction] = useState<
     "save" | "restore" | "view-portfolio" | "logout" | null
   >(null);
@@ -155,6 +159,27 @@ export default function OwnerDashboard({
     setDirty(true);
     setStatusMessage(null);
   }
+
+  function openEditor(id: string, mode: ActiveOwnerEditor["mode"] = "edit") {
+    setActiveEditor({ id, mode });
+    setStatusMessage(null);
+  }
+
+  function closeEditor() {
+    setActiveEditor(null);
+  }
+
+  const editorControls: OwnerEditorControls = {
+    activeEditor,
+    onOpen: openEditor,
+    onClose: closeEditor,
+    onSave: () => {
+      closeEditor();
+      setConfirmAction("save");
+    },
+    busy: saving || uploadingField !== null,
+    statusMessage,
+  };
 
   async function handleSaveAll() {
     setSaving(true);
@@ -460,7 +485,13 @@ export default function OwnerDashboard({
             {/* 01: PROFILE, HERO & RESUME */}
             {activeTab === "profile" && (
               <div className="owner-stack">
-                <div className="owner-card">
+                <OwnerEditor
+                  {...editorControls}
+                  id="profile-identity"
+                  title="Header, Tagline & Occupation"
+                  summary={`${draft.personal.name} · ${draft.personal.role}`}
+                  icon={UserCheck}
+                >
                   <p className="eyebrow">01 · Identity, Status & Occupation</p>
                   <h3>Header, Tagline & Occupation</h3>
                   <div className="form-grid mt-4">
@@ -650,11 +681,18 @@ export default function OwnerDashboard({
                       />
                     </div>
                   </div>
-                </div>
+                </OwnerEditor>
 
                 {/* Profile Image & Resume Upload Cards */}
                 <div className="owner-split-grid">
-                  <div className="owner-card">
+                  <OwnerEditor
+                    {...editorControls}
+                    id="profile-portrait"
+                    title="Hero Portrait"
+                    summary={draft.personal.portraitCaption}
+                    image={draft.personal.portraitUrl || portraitDefault}
+                    icon={ImageIcon}
+                  >
                     <p className="eyebrow">
                       <ImageIcon size={13} /> Profile Image
                     </p>
@@ -743,9 +781,15 @@ export default function OwnerDashboard({
                         />
                       </div>
                     </div>
-                  </div>
+                  </OwnerEditor>
 
-                  <div className="owner-card">
+                  <OwnerEditor
+                    {...editorControls}
+                    id="profile-resume"
+                    title="Downloadable Resume (PDF)"
+                    summary={draft.personal.resumeUrl}
+                    icon={FileText}
+                  >
                     <p className="eyebrow">
                       <FileText size={13} /> Resume Document
                     </p>
@@ -808,7 +852,7 @@ export default function OwnerDashboard({
                         }
                       />
                     </div>
-                  </div>
+                  </OwnerEditor>
                 </div>
               </div>
             )}
@@ -816,7 +860,13 @@ export default function OwnerDashboard({
             {/* 02: ABOUT & OCCUPATION */}
             {activeTab === "about" && (
               <div className="owner-stack">
-                <div className="owner-card">
+                <OwnerEditor
+                  {...editorControls}
+                  id="about-heading"
+                  title="About Section & Occupation"
+                  summary={draft.sectionHeadings.about.title}
+                  icon={Sparkles}
+                >
                   <p className="eyebrow">02 · About Section & Status Card</p>
                   <h3>Section Heading & Occupation Card</h3>
                   <div className="form-grid mt-4">
@@ -975,7 +1025,7 @@ export default function OwnerDashboard({
                       />
                     </div>
                   </div>
-                </div>
+                </OwnerEditor>
 
                 {/* Biography Paragraphs */}
                 <div className="owner-card">
@@ -987,19 +1037,29 @@ export default function OwnerDashboard({
                     <button
                       type="button"
                       className="button button-secondary"
-                      onClick={() =>
+                      onClick={() => {
                         updateDraft((d) => {
                           d.personal.about.push("New biography paragraph.");
                           return d;
-                        })
-                      }
+                        });
+                        openEditor(`paragraph-${draft.personal.about.length}`, "create");
+                      }}
                     >
                       <Plus size={15} /> Add paragraph
                     </button>
                   </div>
                   <div className="owner-list-stack mt-4">
                     {draft.personal.about.map((para, idx) => (
-                      <div key={idx} className="owner-item-row">
+                      <OwnerEditor
+                        {...editorControls}
+                        key={idx}
+                        id={`paragraph-${idx}`}
+                        title={`Biography paragraph ${idx + 1}`}
+                        summary={para}
+                        createTitle="Add paragraph"
+                        variant="row"
+                        icon={FileText}
+                      >
                         <div className="form-field field-wide">
                           <label htmlFor={`about-para-${idx}`}>
                             Paragraph {idx + 1}
@@ -1020,16 +1080,17 @@ export default function OwnerDashboard({
                           type="button"
                           className="icon-button owner-delete-btn"
                           aria-label={`Remove paragraph ${idx + 1}`}
-                          onClick={() =>
+                          onClick={() => {
                             updateDraft((d) => {
                               d.personal.about.splice(idx, 1);
                               return d;
-                            })
-                          }
+                            });
+                            closeEditor();
+                          }}
                         >
                           <Trash2 size={15} />
                         </button>
-                      </div>
+                      </OwnerEditor>
                     ))}
                   </div>
                 </div>
@@ -1044,22 +1105,32 @@ export default function OwnerDashboard({
                     <button
                       type="button"
                       className="button button-secondary"
-                      onClick={() =>
+                      onClick={() => {
                         updateDraft((d) => {
                           d.personal.interests.push({
                             title: "New focus area",
                             description: "Description of this focus area.",
                           });
                           return d;
-                        })
-                      }
+                        });
+                        openEditor(`focus-${draft.personal.interests.length}`, "create");
+                      }}
                     >
                       <Plus size={15} /> Add focus item
                     </button>
                   </div>
                   <div className="owner-list-stack mt-4">
                     {draft.personal.interests.map((item, idx) => (
-                      <div key={idx} className="owner-subcard">
+                      <OwnerEditor
+                        {...editorControls}
+                        key={idx}
+                        id={`focus-${idx}`}
+                        title={item.title}
+                        summary={item.description}
+                        createTitle="Add focus item"
+                        variant="row"
+                        icon={Sparkles}
+                      >
                         <div className="form-grid">
                           <div className="form-field">
                             <label htmlFor={`interest-title-${idx}`}>
@@ -1100,20 +1171,29 @@ export default function OwnerDashboard({
                           <button
                             type="button"
                             className="button button-secondary mt-3"
-                            onClick={() =>
+                            onClick={() => {
                               updateDraft((d) => {
                                 d.personal.interests.splice(idx, 1);
                                 return d;
-                              })
-                            }
+                              });
+                              closeEditor();
+                            }}
                           >
                             <Trash2 size={14} /> Remove item
                           </button>
                         )}
-                      </div>
+                      </OwnerEditor>
                     ))}
                   </div>
 
+                  <OwnerEditor
+                    {...editorControls}
+                    id="about-languages"
+                    title="Spoken Languages"
+                    summary={draft.personal.languages.join(", ")}
+                    variant="row"
+                    icon={Mail}
+                  >
                   <div className="form-field field-wide mt-4">
                     <label htmlFor="personal-languages">
                       Languages (comma-separated)
@@ -1133,6 +1213,7 @@ export default function OwnerDashboard({
                       }
                     />
                   </div>
+                  </OwnerEditor>
                 </div>
               </div>
             )}
@@ -1140,7 +1221,13 @@ export default function OwnerDashboard({
             {/* 03: SKILLS & TOOLKIT */}
             {activeTab === "skills" && (
               <div className="owner-stack">
-                <div className="owner-card">
+                <OwnerEditor
+                  {...editorControls}
+                  id="skills-heading"
+                  title="Skills Section Heading"
+                  summary={draft.sectionHeadings.skills.title}
+                  icon={Code2}
+                >
                   <p className="eyebrow">03 · Technical Skills</p>
                   <h3>Section Heading</h3>
                   <div className="form-grid mt-4">
@@ -1188,7 +1275,7 @@ export default function OwnerDashboard({
                       />
                     </div>
                   </div>
-                </div>
+                </OwnerEditor>
 
                 <div className="owner-card">
                   <div className="owner-card-header-row">
@@ -1199,7 +1286,7 @@ export default function OwnerDashboard({
                     <button
                       type="button"
                       className="button button-primary"
-                      onClick={() =>
+                      onClick={() => {
                         updateDraft((d) => {
                           d.skillGroups.push({
                             title: "New Skill Category",
@@ -1208,8 +1295,9 @@ export default function OwnerDashboard({
                             skills: ["New Skill"],
                           });
                           return d;
-                        })
-                      }
+                        });
+                        openEditor(`skill-${draft.skillGroups.length}`, "create");
+                      }}
                     >
                       <Plus size={15} /> Add skill category
                     </button>
@@ -1217,7 +1305,16 @@ export default function OwnerDashboard({
 
                   <div className="owner-list-stack mt-4">
                     {draft.skillGroups.map((group, idx) => (
-                      <div key={idx} className="owner-subcard">
+                      <OwnerEditor
+                        {...editorControls}
+                        key={idx}
+                        id={`skill-${idx}`}
+                        title={group.title}
+                        summary={group.skills.join(", ")}
+                        createTitle="Add skill category"
+                        variant="row"
+                        icon={Code2}
+                      >
                         <div className="owner-subcard-top">
                           <strong>
                             {idx + 1}. {group.title}
@@ -1228,14 +1325,17 @@ export default function OwnerDashboard({
                               className="icon-button"
                               disabled={idx === 0}
                               aria-label={`Move ${group.title} up`}
-                              onClick={() =>
+                              onClick={() => {
                                 updateDraft((d) => {
                                   const temp = d.skillGroups[idx - 1]!;
                                   d.skillGroups[idx - 1] = d.skillGroups[idx]!;
                                   d.skillGroups[idx] = temp;
                                   return d;
-                                })
-                              }
+                                });
+                                setActiveEditor((prev) =>
+                                  prev ? { ...prev, id: `skill-${idx - 1}` } : null,
+                                );
+                              }}
                             >
                               <ArrowUp size={14} />
                             </button>
@@ -1244,14 +1344,17 @@ export default function OwnerDashboard({
                               className="icon-button"
                               disabled={idx === draft.skillGroups.length - 1}
                               aria-label={`Move ${group.title} down`}
-                              onClick={() =>
+                              onClick={() => {
                                 updateDraft((d) => {
                                   const temp = d.skillGroups[idx + 1]!;
                                   d.skillGroups[idx + 1] = d.skillGroups[idx]!;
                                   d.skillGroups[idx] = temp;
                                   return d;
-                                })
-                              }
+                                });
+                                setActiveEditor((prev) =>
+                                  prev ? { ...prev, id: `skill-${idx + 1}` } : null,
+                                );
+                              }}
                             >
                               <ArrowDown size={14} />
                             </button>
@@ -1259,12 +1362,13 @@ export default function OwnerDashboard({
                               type="button"
                               className="icon-button owner-delete-btn"
                               aria-label={`Delete ${group.title}`}
-                              onClick={() =>
+                              onClick={() => {
                                 updateDraft((d) => {
                                   d.skillGroups.splice(idx, 1);
                                   return d;
-                                })
-                              }
+                                });
+                                closeEditor();
+                              }}
                             >
                               <Trash2 size={14} />
                             </button>
@@ -1348,7 +1452,7 @@ export default function OwnerDashboard({
                             />
                           </div>
                         </div>
-                      </div>
+                      </OwnerEditor>
                     ))}
                   </div>
                 </div>
@@ -1358,7 +1462,13 @@ export default function OwnerDashboard({
             {/* 04: PROJECTS */}
             {activeTab === "projects" && (
               <div className="owner-stack">
-                <div className="owner-card">
+                <OwnerEditor
+                  {...editorControls}
+                  id="projects-heading"
+                  title="Projects Section Heading"
+                  summary={draft.sectionHeadings.projects.title}
+                  icon={FolderGit2}
+                >
                   <p className="eyebrow">04 · Projects Section</p>
                   <h3>Section Heading</h3>
                   <div className="form-grid mt-4">
@@ -1406,7 +1516,7 @@ export default function OwnerDashboard({
                       />
                     </div>
                   </div>
-                </div>
+                </OwnerEditor>
 
                 <div className="owner-card">
                   <div className="owner-card-header-row">
@@ -2085,51 +2195,16 @@ export default function OwnerDashboard({
                           </div>
                           {currentProject.gallery &&
                             currentProject.gallery.length > 0 && (
-                              <div className="owner-gallery-list mt-3">
-                                {currentProject.gallery.map((slide, sIdx) => (
-                                  <div
-                                    key={`${slide.src}-${sIdx}`}
-                                    className="owner-gallery-item"
-                                  >
-                                    <img
-                                      src={resolveMediaUrl(slide.src)}
-                                      alt={slide.alt}
-                                    />
-                                    <input
-                                      type="text"
-                                      aria-label={`Slide ${sIdx + 1} label`}
-                                      value={slide.label || ""}
-                                      onChange={(e) =>
-                                        updateDraft((d) => {
-                                          const g =
-                                            d.projects[activeProjectIndex]!
-                                              .gallery;
-                                          if (g && g[sIdx]) {
-                                            g[sIdx]!.label = e.target.value;
-                                            g[sIdx]!.alt = `${currentProject.title} — ${e.target.value}`;
-                                          }
-                                          return d;
-                                        })
-                                      }
-                                    />
-                                    <button
-                                      type="button"
-                                      className="icon-button owner-delete-btn"
-                                      aria-label={`Remove slide ${sIdx + 1}`}
-                                      onClick={() =>
-                                        updateDraft((d) => {
-                                          d.projects[
-                                            activeProjectIndex
-                                          ]!.gallery?.splice(sIdx, 1);
-                                          return d;
-                                        })
-                                      }
-                                    >
-                                      <Trash2 size={14} />
-                                    </button>
-                                  </div>
-                                ))}
-                              </div>
+                              <ProjectGalleryEditor
+                                images={currentProject.gallery}
+                                title={currentProject.title}
+                                onChange={(images) =>
+                                  updateDraft((d) => {
+                                    d.projects[activeProjectIndex]!.gallery = images;
+                                    return d;
+                                  })
+                                }
+                              />
                             )}
                         </div>
                       </div>
@@ -2166,7 +2241,13 @@ export default function OwnerDashboard({
             {/* 05: EXPERIENCE & EDUCATION */}
             {activeTab === "experience" && (
               <div className="owner-stack">
-                <div className="owner-card">
+                <OwnerEditor
+                  {...editorControls}
+                  id="experience-heading"
+                  title="Experience Section & Callout"
+                  summary={draft.sectionHeadings.experience.title}
+                  icon={BriefcaseBusiness}
+                >
                   <p className="eyebrow">05 · Experience & Education</p>
                   <h3>Section Heading & Callout Banner</h3>
                   <div className="form-grid mt-4">
@@ -2249,7 +2330,7 @@ export default function OwnerDashboard({
                       />
                     </div>
                   </div>
-                </div>
+                </OwnerEditor>
 
                 {/* Education Entries */}
                 <div className="owner-card">
@@ -2261,7 +2342,7 @@ export default function OwnerDashboard({
                     <button
                       type="button"
                       className="button button-secondary"
-                      onClick={() =>
+                      onClick={() => {
                         updateDraft((d) => {
                           d.education.push({
                             title: "Degree or Program",
@@ -2272,14 +2353,25 @@ export default function OwnerDashboard({
                             highlights: ["Key academic focus or milestone."],
                           });
                           return d;
-                        })
-                      }
+                        });
+                        openEditor(`edu-${draft.education.length}`, "create");
+                      }}
                     >
                       <Plus size={15} /> Add education entry
                     </button>
                   </div>
                   <div className="owner-list-stack mt-4">
                     {draft.education.map((entry, idx) => (
+                      <OwnerEditor
+                        {...editorControls}
+                        key={`edu-${idx}`}
+                        id={`edu-${idx}`}
+                        title={entry.title}
+                        summary={`${entry.organization} · ${entry.date}`}
+                        createTitle="Add education entry"
+                        variant="row"
+                        icon={BriefcaseBusiness}
+                      >
                       <TimelineEntryEditor
                         key={`edu-${idx}`}
                         prefix={`edu-${idx}`}
@@ -2290,13 +2382,15 @@ export default function OwnerDashboard({
                             return d;
                           })
                         }
-                        onDelete={() =>
+                        onDelete={() => {
                           updateDraft((d) => {
                             d.education.splice(idx, 1);
                             return d;
-                          })
-                        }
+                          });
+                          closeEditor();
+                        }}
                       />
+                      </OwnerEditor>
                     ))}
                   </div>
                 </div>
@@ -2311,7 +2405,7 @@ export default function OwnerDashboard({
                     <button
                       type="button"
                       className="button button-primary"
-                      onClick={() =>
+                      onClick={() => {
                         updateDraft((d) => {
                           d.experience.push({
                             title: "Role / Position Title",
@@ -2322,14 +2416,25 @@ export default function OwnerDashboard({
                             highlights: ["Key contribution or achievement."],
                           });
                           return d;
-                        })
-                      }
+                        });
+                        openEditor(`exp-${draft.experience.length}`, "create");
+                      }}
                     >
                       <Plus size={15} /> Add experience entry
                     </button>
                   </div>
                   <div className="owner-list-stack mt-4">
                     {draft.experience.map((entry, idx) => (
+                      <OwnerEditor
+                        {...editorControls}
+                        key={`exp-${idx}`}
+                        id={`exp-${idx}`}
+                        title={entry.title}
+                        summary={`${entry.organization} · ${entry.date}`}
+                        createTitle="Add experience entry"
+                        variant="row"
+                        icon={BriefcaseBusiness}
+                      >
                       <TimelineEntryEditor
                         key={`exp-${idx}`}
                         prefix={`exp-${idx}`}
@@ -2340,13 +2445,15 @@ export default function OwnerDashboard({
                             return d;
                           })
                         }
-                        onDelete={() =>
+                        onDelete={() => {
                           updateDraft((d) => {
                             d.experience.splice(idx, 1);
                             return d;
-                          })
-                        }
+                          });
+                          closeEditor();
+                        }}
                       />
+                      </OwnerEditor>
                     ))}
                   </div>
                 </div>
@@ -2356,7 +2463,13 @@ export default function OwnerDashboard({
             {/* 06: CREDENTIALS & ELIGIBILITY */}
             {activeTab === "credentials" && (
               <div className="owner-stack">
-                <div className="owner-card">
+                <OwnerEditor
+                  {...editorControls}
+                  id="credentials-heading"
+                  title="Credentials Section Heading"
+                  summary={draft.sectionHeadings.certifications.title}
+                  icon={Award}
+                >
                   <p className="eyebrow">06 · Credentials & Eligibility</p>
                   <h3>Section Heading</h3>
                   <div className="form-grid mt-4">
@@ -2408,7 +2521,7 @@ export default function OwnerDashboard({
                       />
                     </div>
                   </div>
-                </div>
+                </OwnerEditor>
 
                 {/* Professional Eligibility / Achievements */}
                 <div className="owner-card">
@@ -2420,7 +2533,7 @@ export default function OwnerDashboard({
                     <button
                       type="button"
                       className="button button-secondary"
-                      onClick={() =>
+                      onClick={() => {
                         updateDraft((d) => {
                           d.achievements.push({
                             title: "New Professional Eligibility",
@@ -2429,27 +2542,38 @@ export default function OwnerDashboard({
                             description: "Eligibility details.",
                           });
                           return d;
-                        })
-                      }
+                        });
+                        openEditor(`eligibility-${draft.achievements.length}`, "create");
+                      }}
                     >
                       <Plus size={15} /> Add eligibility
                     </button>
                   </div>
                   <div className="owner-list-stack mt-4">
                     {draft.achievements.map((item: Achievement, idx: number) => (
-                      <div key={idx} className="owner-subcard">
+                      <OwnerEditor
+                        {...editorControls}
+                        key={idx}
+                        id={`eligibility-${idx}`}
+                        title={item.title}
+                        summary={`${item.organization} · ${item.date}`}
+                        createTitle="Add eligibility"
+                        variant="row"
+                        icon={Award}
+                      >
                         <div className="owner-subcard-top">
                           <strong>{item.title}</strong>
                           <button
                             type="button"
                             className="icon-button owner-delete-btn"
                             aria-label={`Delete ${item.title}`}
-                            onClick={() =>
+                            onClick={() => {
                               updateDraft((d) => {
                                 d.achievements.splice(idx, 1);
                                 return d;
-                              })
-                            }
+                              });
+                              closeEditor();
+                            }}
                           >
                             <Trash2 size={14} />
                           </button>
@@ -2518,7 +2642,7 @@ export default function OwnerDashboard({
                             />
                           </div>
                         </div>
-                      </div>
+                      </OwnerEditor>
                     ))}
                   </div>
                 </div>
@@ -2533,7 +2657,7 @@ export default function OwnerDashboard({
                     <button
                       type="button"
                       className="button button-primary"
-                      onClick={() =>
+                      onClick={() => {
                         updateDraft((d) => {
                           d.certifications.unshift({
                             id: `cert-${Date.now()}`,
@@ -2544,8 +2668,9 @@ export default function OwnerDashboard({
                               "Completed certification course and assessment.",
                           });
                           return d;
-                        })
-                      }
+                        });
+                        openEditor("cert-0", "create");
+                      }}
                     >
                       <Plus size={15} /> Add certification
                     </button>
@@ -2553,7 +2678,17 @@ export default function OwnerDashboard({
                   <div className="owner-list-stack mt-4">
                     {draft.certifications.map(
                       (cert: Certification, idx: number) => (
-                        <div key={cert.id || idx} className="owner-subcard">
+                        <OwnerEditor
+                          {...editorControls}
+                          key={cert.id || idx}
+                          id={`cert-${idx}`}
+                          title={cert.title}
+                          summary={`${cert.issuer} · ${cert.date}`}
+                          createTitle="Add certification"
+                          variant="row"
+                          icon={Award}
+                          image={cert.image}
+                        >
                           <div className="owner-subcard-top">
                             <strong>
                               {idx + 1}. {cert.title}
@@ -2562,12 +2697,13 @@ export default function OwnerDashboard({
                               type="button"
                               className="icon-button owner-delete-btn"
                               aria-label={`Delete ${cert.title}`}
-                              onClick={() =>
+                              onClick={() => {
                                 updateDraft((d) => {
                                   d.certifications.splice(idx, 1);
                                   return d;
-                                })
-                              }
+                                });
+                                closeEditor();
+                              }}
                             >
                               <Trash2 size={14} />
                             </button>
@@ -2746,7 +2882,7 @@ export default function OwnerDashboard({
                               </div>
                             </div>
                           </div>
-                        </div>
+                        </OwnerEditor>
                       ),
                     )}
                   </div>
@@ -2757,7 +2893,13 @@ export default function OwnerDashboard({
             {/* 07: CONTACT, FOOTER & SECURITY */}
             {activeTab === "contact" && (
               <div className="owner-stack">
-                <div className="owner-card">
+                <OwnerEditor
+                  {...editorControls}
+                  id="contact-details"
+                  title="Contact Section & Social Profiles"
+                  summary={draft.personal.email}
+                  icon={Mail}
+                >
                   <p className="eyebrow">07 · Contact Details & Socials</p>
                   <h3>Contact Section & Social Profiles</h3>
                   <div className="form-grid mt-4">
@@ -2948,10 +3090,17 @@ export default function OwnerDashboard({
                       />
                     </div>
                   </div>
-                </div>
+                </OwnerEditor>
 
                 {/* Owner Account Security */}
-                <div className="owner-card">
+                <OwnerEditor
+                  {...editorControls}
+                  id="security"
+                  title="Owner Sign-In Email & Password"
+                  summary={securityEmail}
+                  icon={Lock}
+                  publishable={false}
+                >
                   <p className="eyebrow">
                     <Lock size={13} /> Owner Authentication Security
                   </p>
@@ -3017,7 +3166,7 @@ export default function OwnerDashboard({
                       </button>
                     </div>
                   </form>
-                </div>
+                </OwnerEditor>
               </div>
             )}
           </section>

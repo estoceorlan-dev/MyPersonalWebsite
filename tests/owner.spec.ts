@@ -128,6 +128,7 @@ test("navigates from the footer copyright notice to owner login, authenticates, 
 
   // 5. Edit Profile/Tagline & Status, confirm Save dialog, and verify on live portfolio
   await page.getByRole("button", { name: /Profile, Hero & Resume/ }).click();
+  await page.getByRole("button", { name: "Edit Header, Tagline & Occupation", exact: true }).click();
   await page.screenshot({
     path: `.qa/${testInfo.project.name}-owner-profile.png`,
     fullPage: true,
@@ -141,7 +142,8 @@ test("navigates from the footer copyright notice to owner login, authenticates, 
     .getByLabel("Availability Status Badge")
     .fill("Available for full-stack roles");
 
-  await page.getByRole("button", { name: /Save changes/ }).click();
+  await page.getByRole("dialog", { name: "Edit Header, Tagline & Occupation", exact: true })
+    .getByRole("button", { name: "Save changes", exact: true }).click();
   const saveDialog = page.getByRole("dialog", {
     name: "Save portfolio changes?",
   });

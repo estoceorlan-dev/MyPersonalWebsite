@@ -241,3 +241,131 @@ test("opens the full editor only in a dialog and uses the same dialog for new pr
   await expect(rows).toHaveCount(rawProjects.length);
   await expect(page.getByLabel("Project Title", { exact: true })).toHaveCount(0);
 });
+
+test("shows a working Visit button only for projects with a demo URL", async ({ page, context }, testInfo) => {
+  await context.route("https://florea-haven.vercel.app/**", (route) => route.fulfill({
+    contentType: "text/html", body: "<title>Project demo</title><p>Demo destination</p>",
+  }));
+  await page.goto("/#projects");
+  const florea = page.locator(".project-card").filter({ has: page.getByRole("button", { name: "View Floréa Haven details", exact: true }) });
+  const visit = florea.getByRole("link", { name: "Visit Floréa Haven live demo", exact: true });
+  await expect(visit).toHaveAttribute("href", "https://florea-haven.vercel.app");
+  await expect(visit).toHaveAttribute("target", "_blank");
+  await expect(visit).toHaveAttribute("rel", "noopener noreferrer");
+  const popupPromise = page.waitForEvent("popup");
+  await visit.click();
+  const popup = await popupPromise;
+  await expect(popup).toHaveTitle("Project demo");
+  await popup.close();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+
+  const jce = page.locator(".project-card").filter({ has: page.getByRole("button", { name: "View JCE Management System details", exact: true }) });
+  await expect(jce.getByRole("link", { name: /^Visit / })).toHaveCount(0);
+  await page.goto("/owner");
+  await page.getByRole("button", { name: "04 Projects", exact: true }).click();
+  await page.getByRole("button", { name: "Edit JCE Management System", exact: true }).click();
+  await page.getByLabel("Live Demo URL", { exact: true }).fill("https://example.com/jce-demo");
+  await page.getByRole("dialog", { name: "Edit project", exact: true })
+    .getByRole("button", { name: "Save changes", exact: true }).click();
+  await page.getByRole("button", { name: "Confirm save", exact: true }).click();
+  await expect(page.getByText("All portfolio changes have been saved and published live.")).toBeVisible();
+  await page.goto("/#projects");
+  const jceVisit = jce.getByRole("link", { name: "Visit JCE Management System live demo", exact: true });
+  await expect(jceVisit).toHaveAttribute("href", "https://example.com/jce-demo");
+  const footer = (await jce.locator(".project-card-footer").boundingBox())!;
+  const button = (await jceVisit.boundingBox())!;
+  expect(Math.abs(footer.x + footer.width - button.x - button.width)).toBeLessThan(2);
+  expect(Math.abs(footer.y + footer.height - button.y - button.height)).toBeLessThan(2);
+  await jce.screenshot({ path: `.qa/${testInfo.project.name}-project-visit.png` });
+  const axe = await new AxeBuilder({ page }).include(".projects-grid")
+    .withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
+  expect(axe.violations).toEqual([]);
+});
+
+test("drags gallery images across the grid, renames them, and saves the carousel order", async ({ page, context, isMobile }, testInfo) => {
+  test.setTimeout(60_000);
+  await page.goto("/owner");
+  await page.getByRole("button", { name: "04 Projects", exact: true }).click();
+  await page.getByRole("button", { name: "Edit VitalySync", exact: true }).click();
+  const editor = page.getByRole("dialog", { name: "Edit project", exact: true });
+  const list = editor.getByRole("list", { name: "Project gallery images", exact: true });
+  const rows = list.getByRole("listitem");
+  await expect(rows).toHaveCount(9);
+  await rows.nth(1).getByRole("textbox").fill("Daily overview");
+  await expect(rows.nth(1).getByRole("img")).toHaveAttribute("alt", "VitalySync — Daily overview");
+  await expect(rows.first().getByRole("button", { name: /earlier$/ })).toBeDisabled();
+  await expect(rows.last().getByRole("button", { name: /later$/ })).toBeDisabled();
+
+  async function dragImage(from: number, to: number) {
+    await list.evaluate((element) => {
+      const dialog = element.closest("dialog")!;
+      const header = dialog.querySelector(".modal-top")!.getBoundingClientRect();
+      dialog.scrollTop += element.getBoundingClientRect().top - header.bottom - 12;
+    });
+    const handle = rows.nth(from).getByRole("button", { name: /^Drag to reorder image/ });
+    const source = (await handle.boundingBox())!;
+    const target = (await rows.nth(to).boundingBox())!;
+    const startX = source.x + source.width / 2;
+    const startY = source.y + source.height / 2;
+    const endX = target.x + target.width / 2;
+    const endY = target.y + target.height / 2;
+    if (isMobile) {
+      const session = await context.newCDPSession(page);
+      await session.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: startX, y: startY }] });
+      for (let step = 1; step <= 12; step++) {
+        await session.send("Input.dispatchTouchEvent", {
+          type: "touchMove", touchPoints: [{ x: startX + (endX - startX) * step / 12, y: startY + (endY - startY) * step / 12 }],
+        });
+      }
+      await session.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+      await session.detach();
+    } else {
+      await page.mouse.move(startX, startY);
+      await page.mouse.down();
+      await page.mouse.move(endX, endY, { steps: 12 });
+      await page.mouse.up();
+    }
+  }
+
+  await dragImage(1, 0);
+  await expect(rows.first().getByRole("textbox")).toHaveValue("Daily overview");
+  await expect(rows.nth(1).getByRole("textbox")).toHaveValue("Welcome Page");
+  // On mobile the third image is on the next row; on desktop it is another column.
+  await dragImage(0, 2);
+  await expect(rows.nth(2).getByRole("textbox")).toHaveValue("Daily overview");
+  await dragImage(2, 0);
+  await expect(rows.first().getByRole("textbox")).toHaveValue("Daily overview");
+  const move = rows.first().getByRole("button", { name: /later$/ });
+  await move.focus();
+  await page.keyboard.press("Enter");
+  await expect(rows.nth(1).getByRole("textbox")).toHaveValue("Daily overview");
+  await rows.nth(1).getByRole("button", { name: /earlier$/ }).click();
+  await rows.first().getByRole("textbox").fill("Wellness dashboard");
+  await expect(rows.first().getByRole("img")).toHaveAttribute("alt", "VitalySync — Wellness dashboard");
+  await expect(rows.nth(1).getByRole("textbox")).toHaveValue("Welcome Page");
+  await rows.last().getByRole("button", { name: "Remove slide 9", exact: true }).click();
+  await expect(rows).toHaveCount(8);
+  expect(await editor.evaluate((dialog) => dialog.scrollWidth <= dialog.clientWidth)).toBe(true);
+  const axe = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
+  expect(axe.violations).toEqual([]);
+  await list.screenshot({ path: `.qa/${testInfo.project.name}-project-gallery.png` });
+
+  await editor.getByRole("button", { name: "Save changes", exact: true }).click();
+  await page.getByRole("button", { name: "Confirm save", exact: true }).click();
+  await expect(page.getByText("All portfolio changes have been saved and published live.")).toBeVisible();
+  await page.reload();
+  await page.getByRole("button", { name: "04 Projects", exact: true }).click();
+  await page.getByRole("button", { name: "Edit VitalySync", exact: true }).click();
+  await expect(rows.first().getByRole("textbox")).toHaveValue("Wellness dashboard");
+  await expect(rows.nth(1).getByRole("textbox")).toHaveValue("Welcome Page");
+  await editor.getByRole("button", { name: "Done", exact: true }).click();
+  await page.goto("/#projects");
+  await page.getByRole("button", { name: "View VitalySync details", exact: true }).click();
+  const carousel = page.getByRole("region", { name: "VitalySync interface screenshots", exact: true });
+  await carousel.hover();
+  await expect(carousel.locator(".carousel-count")).toHaveText("01 / 08");
+  await expect(carousel.locator(".carousel-label")).toHaveText("Wellness dashboard");
+  await expect(carousel.locator(".carousel-slide.is-active img")).toHaveAttribute("alt", "VitalySync — Wellness dashboard");
+  await carousel.getByRole("button", { name: "Next screenshot", exact: true }).click();
+  await expect(carousel.locator(".carousel-label")).toHaveText("Welcome Page");
+});

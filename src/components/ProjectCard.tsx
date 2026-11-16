@@ -11,6 +11,7 @@ export default function ProjectCard({
   index: number;
   onOpen: () => void;
 }) {
+  const demoUrl = project.demo?.trim();
   return (
     <article className="project-card">
       <ProjectVisual project={project} />
@@ -26,12 +27,25 @@ export default function ProjectCard({
           </button>
         </h3>
         <p className="project-description">{project.description}</p>
-        <div className="tags">
-          {project.technologies.slice(0, 3).map((technology) => (
-            <span key={technology}>{technology}</span>
-          ))}
-          {project.technologies.length > 3 && (
-            <span>+{project.technologies.length - 3}</span>
+        <div className="project-card-footer">
+          <div className="tags">
+            {project.technologies.slice(0, 3).map((technology) => (
+              <span key={technology}>{technology}</span>
+            ))}
+            {project.technologies.length > 3 && (
+              <span>+{project.technologies.length - 3}</span>
+            )}
+          </div>
+          {demoUrl && (
+            <a
+              className="button button-secondary project-card-visit"
+              href={demoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Visit ${project.title} live demo`}
+            >
+              Visit <ArrowUpRight size={15} aria-hidden="true" />
+            </a>
           )}
         </div>
       </div>
