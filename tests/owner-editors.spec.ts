@@ -181,7 +181,7 @@ test("publishes, replaces, and removes an eligibility certificate picture", asyn
   }
 });
 
-test("publishes PDF and file attachments and removes them individually", async ({ page }) => {
+test("opens the eligibility PDF from its picture and keeps other attachments available", async ({ page, context, isMobile }) => {
   const title = "Civil Service Professional Eligibility";
   const files = [
     { name: "eligibility.pdf", mimeType: "application/pdf" },
@@ -202,25 +202,30 @@ test("publishes PDF and file attachments and removes them individually", async (
     await expect(editor.getByRole("link", { name: file.name })).toBeVisible();
   }
   await save(page, editor);
+  const pdfRequests: string[] = [];
+  context.on("request", (req) => {
+    if (req.url().endsWith("/test-upload/eligibility.pdf")) pdfRequests.push(req.url());
+  });
   await page.goto("/#certifications");
   const links = page.getByRole("list", { name: "Certificate files" });
-  await links.scrollIntoViewIfNeeded();
-  const pdfPage = links.getByRole("img", { name: "First page of eligibility.pdf" });
-  await expect(pdfPage).toBeVisible({ timeout: 15000 });
-  const rendered = await pdfPage.evaluate((canvas: HTMLCanvasElement) => {
-    const pixels = canvas.getContext("2d")!.getImageData(0, 0, canvas.width, canvas.height).data;
-    return pixels.some((value, index) => index % 4 !== 3 && value < 200);
-  });
-  expect(rendered).toBe(true);
-  const image = links.getByRole("img", { name: "Certificate image: eligibility.png" });
-  await expect.poll(() => image.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
+  const pdfLink = page.getByRole("link", { name: `Open ${title} PDF` });
+  await expect(pdfLink.locator("img")).toHaveAttribute("src", "/test-upload/eligibility.png");
+  await expect(pdfLink).toHaveAttribute("href", "/test-upload/eligibility.pdf");
+  await expect(page.locator(".eligibility-card canvas, .eligibility-card object, .eligibility-card iframe")).toHaveCount(0);
   await expect(links.getByRole("link", { name: "supporting-notes.docx" })).toHaveAttribute("href", "/test-upload/supporting-notes.docx");
+  expect(pdfRequests).toHaveLength(0);
+  const opened = page.waitForEvent("popup");
+  if (isMobile) await pdfLink.tap();
+  else await pdfLink.click();
+  await (await opened).close();
+  expect(pdfRequests.length).toBeGreaterThan(0);
   await openEntry();
   await editor.getByRole("button", { name: "Remove eligibility.pdf" }).click();
   await save(page, editor);
   await page.goto("/#certifications");
   await expect(links.getByRole("link", { name: "supporting-notes.docx" })).toBeVisible();
-  await expect(links.getByRole("link", { name: "eligibility.pdf" })).toHaveCount(0);
+  await expect(pdfLink).toHaveCount(0);
+  await expect(page.getByRole("button", { name: `View ${title} certificate picture` })).toBeVisible();
 });
 
 test("keeps account credential updates separate from publishing portfolio content", async ({ page }) => {

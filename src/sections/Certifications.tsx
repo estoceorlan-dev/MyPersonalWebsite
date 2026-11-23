@@ -1,10 +1,56 @@
 import { useState } from "react";
 import { Award, ArrowUpRight, Plus } from "lucide-react";
-import type { Certification } from "../data/certifications";
+import { isCertificateImage, type Achievement, type Certification } from "../data/certifications";
 import { usePortfolio, resolveMediaUrl } from "../context/PortfolioContext";
 import { Reveal, SectionHeading } from "../components/Shared";
 import { Modal } from "../components/Modal";
 import { CertificateFilePreview } from "../components/CertificateFilePreview";
+
+function EligibilityCard({ item, onViewPicture }: {
+  item: Achievement;
+  onViewPicture: (image: string) => void;
+}) {
+  const files = item.attachments ?? [];
+  const pdf = files.find((file) => file.mimeType === "application/pdf" || /\.pdf$/i.test(file.filename));
+  const picture = item.image || files.find(isCertificateImage)?.url;
+  const otherFiles = files.filter((file) => file !== pdf && file.url !== picture);
+  const cover = picture ? (
+    <img className="eligibility-picture" src={resolveMediaUrl(picture)} alt="" loading="lazy" />
+  ) : (
+    <div className="credential-art" aria-hidden="true">
+      <div className="mini-certificate">
+        <Award size={30} /><i /><i /><span /><i />
+      </div>
+      <span className="credential-spark">+</span>
+    </div>
+  );
+  return (
+    <article className="eligibility-card">
+      {pdf ? (
+        <a href={resolveMediaUrl(pdf.url)} target="_blank" rel="noopener noreferrer" aria-label={`Open ${item.title} PDF`}>
+          {cover}
+        </a>
+      ) : picture ? (
+        <button type="button" aria-label={`View ${item.title} certificate picture`} aria-haspopup="dialog" onClick={() => onViewPicture(picture)}>
+          {cover}
+        </button>
+      ) : cover}
+      <div>
+        <p className="eyebrow">Professional eligibility</p>
+        <h3>{item.title}</h3>
+        <p>{item.organization}</p>
+        <span className="credential-date">{item.date}</span>
+      </div>
+      {otherFiles.length > 0 && (
+        <ul className="eligibility-files" aria-label="Certificate files">
+          {otherFiles.map((file) => (
+            <li key={file.url}><CertificateFilePreview file={file} pdf={pdf} /></li>
+          ))}
+        </ul>
+      )}
+    </article>
+  );
+}
 
 export default function Certifications() {
   const { content } = usePortfolio();
@@ -29,42 +75,7 @@ export default function Certifications() {
         <div className="eligibility-list">
           {achievements.map((item) => (
             <Reveal key={item.title}>
-              <article className="eligibility-card">
-                {item.image ? (
-                  <button
-                    type="button"
-                    aria-label={`View ${item.title} certificate picture`}
-                    aria-haspopup="dialog"
-                    onClick={() => setSelected({ ...item, issuer: item.organization })}
-                  >
-                    <img className="eligibility-picture" src={resolveMediaUrl(item.image)} alt="" loading="lazy" />
-                  </button>
-                ) : !item.attachments?.length && (
-                  <div className="credential-art" aria-hidden="true">
-                    <div className="mini-certificate">
-                      <Award size={30} />
-                      <i />
-                      <i />
-                      <span />
-                      <i />
-                    </div>
-                    <span className="credential-spark">+</span>
-                  </div>
-                )}
-                <div>
-                  <p className="eyebrow">Professional eligibility</p>
-                  <h3>{item.title}</h3>
-                  <p>{item.organization}</p>
-                  <span className="credential-date">{item.date}</span>
-                </div>
-                {Boolean(item.attachments?.length) && (
-                  <ul className="eligibility-files" aria-label="Certificate files">
-                    {item.attachments?.map((file) => (
-                      <li key={file.url}><CertificateFilePreview file={file} /></li>
-                    ))}
-                  </ul>
-                )}
-              </article>
+              <EligibilityCard item={item} onViewPicture={(image) => setSelected({ ...item, image, issuer: item.organization })} />
             </Reveal>
           ))}
         </div>

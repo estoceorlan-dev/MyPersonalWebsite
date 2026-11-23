@@ -10,6 +10,9 @@ export type Certification = {
   pdfUrl?: string;
 };
 export type CertificateFile = { url: string; filename: string; mimeType?: string };
+export function isCertificateImage(file: CertificateFile) {
+  return file.mimeType?.startsWith("image/") || /\.(avif|bmp|gif|ico|jpe?g|jfif|png|svg|webp)$/i.test(file.filename);
+}
 export type Achievement = {
   title: string;
   organization: string;
