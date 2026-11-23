@@ -9,13 +9,14 @@ export type Certification = {
   description?: string;
   pdfUrl?: string;
 };
+export type CertificateFile = { url: string; filename: string; mimeType?: string };
 export type Achievement = {
   title: string;
   organization: string;
   date: string;
   description: string;
   image?: string;
-  attachments?: { url: string; filename: string }[];
+  attachments?: CertificateFile[];
 };
 // Eligibility is separate from course certifications, as in the resume.
 // Previews and PDFs live in public/certificates (sources: assets/certificates).

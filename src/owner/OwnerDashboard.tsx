@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { CertificateFilePreview } from "../components/CertificateFilePreview";
 import type { ChangeEvent, FormEvent } from "react";
 import {
   ArrowDown,
@@ -2700,10 +2701,11 @@ export default function OwnerDashboard({
                             aria-describedby={`eligibility-file-hint-${idx}`}
                             disabled={editorControls.busy}
                             onChange={(event) => {
+                              const mimeType = event.currentTarget.files?.[0]?.type;
                               void handleFileUpload(event, `eligibility-file-${idx}`, (url, filename) => {
                                 updateDraft((d) => {
                                   const entry = d.achievements[idx]!;
-                                  (entry.attachments ??= []).push({ url, filename });
+                                  (entry.attachments ??= []).push({ url, filename, mimeType });
                                   return d;
                                 });
                               }, true);
@@ -2713,7 +2715,7 @@ export default function OwnerDashboard({
                           {uploadingField === `eligibility-file-${idx}` && <span role="status">Uploading file…</span>}
                           {item.attachments?.map((file) => (
                             <div className="owner-inline-actions" key={file.url}>
-                              <a className="eligibility-file-link" href={resolveMediaUrl(file.url)} target="_blank" rel="noopener noreferrer">{file.filename}</a>
+                              <CertificateFilePreview file={file} />
                               <button
                                 type="button"
                                 className="icon-button"

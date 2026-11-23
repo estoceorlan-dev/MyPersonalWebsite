@@ -3018,12 +3018,35 @@ textarea {
 }
 .eligibility-card {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 40px;
   padding: 38px 42px;
   border: 1px solid #e3deec;
   border-radius: 10px;
   background: #faf9fc;
+}
+.eligibility-files {
+  display: grid;
+  gap: 1rem;
+  width: 100%;
+  min-width: 0;
+}
+.certificate-file-preview {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+}
+.certificate-file-preview :is(canvas, img) {
+  max-width: 100%;
+  max-height: 75vh;
+  width: auto;
+  height: auto;
+  border-radius: 6px;
+  object-fit: contain;
+}
+.certificate-file-preview canvas[hidden] {
+  display: none;
 }
 .eligibility-file-link {
   overflow-wrap: anywhere;

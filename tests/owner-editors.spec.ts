@@ -28,8 +28,12 @@ test.beforeEach(async ({ context }) => {
     }
   });
   await context.route("**/test-upload/**", (route) => route.fulfill({
-    contentType: "image/png",
+    contentType: "application/octet-stream",
+    headers: { "Content-Disposition": "attachment", "X-Content-Type-Options": "nosniff" },
     body: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jO/8AAAAASUVORK5CYII=", "base64"),
+  }));
+  await context.route("**/test-upload/*.pdf", (route) => route.fulfill({
+    path: "public/certificates/introduction-to-modern-ai.pdf", contentType: "application/pdf",
   }));
 });
 
@@ -181,6 +185,7 @@ test("publishes PDF and file attachments and removes them individually", async (
   const title = "Civil Service Professional Eligibility";
   const files = [
     { name: "eligibility.pdf", mimeType: "application/pdf" },
+    { name: "eligibility.png", mimeType: "image/png" },
     { name: "supporting-notes.docx", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" },
   ];
   async function openEntry() {
@@ -199,9 +204,17 @@ test("publishes PDF and file attachments and removes them individually", async (
   await save(page, editor);
   await page.goto("/#certifications");
   const links = page.getByRole("list", { name: "Certificate files" });
-  for (const file of files) {
-    await expect(links.getByRole("link", { name: file.name })).toHaveAttribute("href", `/test-upload/${file.name}`);
-  }
+  await links.scrollIntoViewIfNeeded();
+  const pdfPage = links.getByRole("img", { name: "First page of eligibility.pdf" });
+  await expect(pdfPage).toBeVisible({ timeout: 15000 });
+  const rendered = await pdfPage.evaluate((canvas: HTMLCanvasElement) => {
+    const pixels = canvas.getContext("2d")!.getImageData(0, 0, canvas.width, canvas.height).data;
+    return pixels.some((value, index) => index % 4 !== 3 && value < 200);
+  });
+  expect(rendered).toBe(true);
+  const image = links.getByRole("img", { name: "Certificate image: eligibility.png" });
+  await expect.poll(() => image.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
+  await expect(links.getByRole("link", { name: "supporting-notes.docx" })).toHaveAttribute("href", "/test-upload/supporting-notes.docx");
   await openEntry();
   await editor.getByRole("button", { name: "Remove eligibility.pdf" }).click();
   await save(page, editor);

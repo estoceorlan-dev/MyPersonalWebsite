@@ -4,6 +4,7 @@ import type { Certification } from "../data/certifications";
 import { usePortfolio, resolveMediaUrl } from "../context/PortfolioContext";
 import { Reveal, SectionHeading } from "../components/Shared";
 import { Modal } from "../components/Modal";
+import { CertificateFilePreview } from "../components/CertificateFilePreview";
 
 export default function Certifications() {
   const { content } = usePortfolio();
@@ -38,7 +39,7 @@ export default function Certifications() {
                   >
                     <img className="eligibility-picture" src={resolveMediaUrl(item.image)} alt="" loading="lazy" />
                   </button>
-                ) : (
+                ) : !item.attachments?.length && (
                   <div className="credential-art" aria-hidden="true">
                     <div className="mini-certificate">
                       <Award size={30} />
@@ -55,18 +56,14 @@ export default function Certifications() {
                   <h3>{item.title}</h3>
                   <p>{item.organization}</p>
                   <span className="credential-date">{item.date}</span>
-                  {Boolean(item.attachments?.length) && (
-                    <ul className="mt-3" aria-label="Certificate files">
-                      {item.attachments?.map((file) => (
-                        <li key={file.url}>
-                          <a className="eligibility-file-link" href={resolveMediaUrl(file.url)} target="_blank" rel="noopener noreferrer">
-                            {file.filename}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
                 </div>
+                {Boolean(item.attachments?.length) && (
+                  <ul className="eligibility-files" aria-label="Certificate files">
+                    {item.attachments?.map((file) => (
+                      <li key={file.url}><CertificateFilePreview file={file} /></li>
+                    ))}
+                  </ul>
+                )}
               </article>
             </Reveal>
           ))}

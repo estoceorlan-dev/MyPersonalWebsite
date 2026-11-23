@@ -3,6 +3,8 @@ dotenv.config({ path: [".env.local", ".env"] });
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { viteStaticCopy } from "vite-plugin-static-copy";
+import pdfjsPackage from "pdfjs-dist/package.json" with { type: "json" };
 import tailwindcss from "@tailwindcss/vite";
 import { functionBaseUrl } from "@neon/env";
 import { personal } from "./src/data/personal";
@@ -97,6 +99,12 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    viteStaticCopy({
+      targets: [
+        "legacy/build/pdf.min.mjs", "legacy/build/pdf.worker.min.mjs",
+        "cmaps", "iccs", "standard_fonts", "wasm", "LICENSE",
+      ].map((path) => ({ src: `node_modules/pdfjs-dist/${path}`, dest: `pdfjs/${pdfjsPackage.version}` })),
+    }),
     tailwindcss(),
     {
       name: "portfolio-api",
