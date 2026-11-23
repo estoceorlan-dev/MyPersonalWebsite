@@ -146,6 +146,37 @@ test("keeps portrait, resume, and certificate uploads working inside their dialo
   expect(content.certifications[0]!.pdfUrl).toBe("/test-upload/certificate.pdf");
 });
 
+test("publishes, replaces, and removes an eligibility certificate picture", async ({ page }) => {
+  const title = "Civil Service Professional Eligibility";
+  const preview = page.getByRole("button", { name: `View ${title} certificate picture` });
+  for (const filename of ["eligibility.png", "replacement.png", null]) {
+    await page.goto("/owner");
+    await page.getByRole("button", { name: "06 Credentials & Certs", exact: true }).click();
+    await page.getByRole("button", { name: `Edit ${title}`, exact: true }).click();
+    const dialog = page.getByRole("dialog");
+    if (filename) {
+      await dialog.getByLabel("Certificate picture", { exact: true }).setInputFiles({
+        name: filename, mimeType: "image/png", buffer: Buffer.from("upload fixture"),
+      });
+      await expect(dialog.getByRole("img", { name: `${title} certificate preview` })).toHaveAttribute("src", `/test-upload/${filename}`);
+    } else {
+      await dialog.getByRole("button", { name: "Remove picture" }).click();
+    }
+    await save(page, dialog);
+    await page.goto("/#certifications");
+    await expect(page.getByRole("heading", { name: title, exact: true })).toBeVisible();
+    if (filename) {
+      await preview.click();
+      const picture = page.getByRole("dialog", { name: title }).getByRole("img", { name: `${title} certificate`, exact: true });
+      await expect(picture).toHaveAttribute("src", `/test-upload/${filename}`);
+      await expect(picture).toBeVisible();
+      await expect.poll(() => picture.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
+    } else {
+      await expect(preview).toHaveCount(0);
+    }
+  }
+});
+
 test("keeps account credential updates separate from publishing portfolio content", async ({ page }) => {
   const contentWrites: string[] = [];
   page.on("request", (request) => {

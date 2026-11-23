@@ -2560,6 +2560,10 @@ export default function OwnerDashboard({
                         createTitle="Add eligibility"
                         variant="row"
                         icon={Award}
+                        image={item.image}
+                        onClose={() => {
+                          if (uploadingField === null) closeEditor();
+                        }}
                       >
                         <div className="owner-subcard-top">
                           <strong>{item.title}</strong>
@@ -2567,6 +2571,7 @@ export default function OwnerDashboard({
                             type="button"
                             className="icon-button owner-delete-btn"
                             aria-label={`Delete ${item.title}`}
+                            disabled={uploadingField !== null}
                             onClick={() => {
                               updateDraft((d) => {
                                 d.achievements.splice(idx, 1);
@@ -2641,6 +2646,50 @@ export default function OwnerDashboard({
                               }
                             />
                           </div>
+                        </div>
+                        <div className="form-field mt-4">
+                          <label htmlFor={`eligibility-picture-${idx}`}>Certificate picture</label>
+                          {item.image && (
+                            <img
+                              className="eligibility-picture"
+                              src={resolveMediaUrl(item.image)}
+                              alt={`${item.title} certificate preview`}
+                            />
+                          )}
+                          <input
+                            id={`eligibility-picture-${idx}`}
+                            type="file"
+                            accept="image/*"
+                            disabled={editorControls.busy}
+                            onChange={(event) => {
+                              const file = event.currentTarget.files?.[0];
+                              if (file && !file.type.startsWith("image/")) {
+                                event.currentTarget.value = "";
+                                setStatusMessage({ type: "error", text: "Choose an image file for the certificate picture." });
+                                return;
+                              }
+                              void handleFileUpload(event, `eligibility-picture-${idx}`, (url) => {
+                                updateDraft((d) => {
+                                  d.achievements[idx]!.image = url;
+                                  return d;
+                                });
+                              });
+                            }}
+                          />
+                          {uploadingField === `eligibility-picture-${idx}` && <span role="status">Uploading picture…</span>}
+                          {item.image && (
+                            <button
+                              type="button"
+                              className="button button-secondary"
+                              disabled={editorControls.busy}
+                              onClick={() => updateDraft((d) => {
+                                delete d.achievements[idx]!.image;
+                                return d;
+                              })}
+                            >
+                              Remove picture
+                            </button>
+                          )}
                         </div>
                       </OwnerEditor>
                     ))}

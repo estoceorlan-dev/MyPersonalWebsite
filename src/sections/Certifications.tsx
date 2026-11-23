@@ -9,7 +9,7 @@ export default function Certifications() {
   const { content } = usePortfolio();
   const { certifications, achievements, sectionHeadings } = content;
   const [expanded, setExpanded] = useState(false);
-  const [selected, setSelected] = useState<Certification | null>(null);
+  const [selected, setSelected] = useState<Omit<Certification, "id"> | null>(null);
   return (
     <section
       id="certifications"
@@ -29,16 +29,27 @@ export default function Certifications() {
           {achievements.map((item) => (
             <Reveal key={item.title}>
               <article className="eligibility-card">
-                <div className="credential-art" aria-hidden="true">
-                  <div className="mini-certificate">
-                    <Award size={30} />
-                    <i />
-                    <i />
-                    <span />
-                    <i />
+                {item.image ? (
+                  <button
+                    type="button"
+                    aria-label={`View ${item.title} certificate picture`}
+                    aria-haspopup="dialog"
+                    onClick={() => setSelected({ ...item, issuer: item.organization })}
+                  >
+                    <img className="eligibility-picture" src={resolveMediaUrl(item.image)} alt="" loading="lazy" />
+                  </button>
+                ) : (
+                  <div className="credential-art" aria-hidden="true">
+                    <div className="mini-certificate">
+                      <Award size={30} />
+                      <i />
+                      <i />
+                      <span />
+                      <i />
+                    </div>
+                    <span className="credential-spark">+</span>
                   </div>
-                  <span className="credential-spark">+</span>
-                </div>
+                )}
                 <div>
                   <p className="eyebrow">Professional eligibility</p>
                   <h3>{item.title}</h3>
