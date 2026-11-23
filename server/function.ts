@@ -23,7 +23,6 @@ import {
 } from "./auth";
 import type { JwtOwnerPayload } from "./auth";
 
-const ALLOWED_MIME_PREFIXES = ["image/", "application/pdf"];
 const MAX_UPLOAD_BYTES = 15 * 1024 * 1024; // 15 MB
 
 function buildCorsHeaders(request: Request): Record<string, string> {
@@ -389,15 +388,18 @@ export default {
         const body = (await request.json().catch(() => ({}))) as {
           filename?: string;
           mimeType?: string;
+          attachment?: boolean;
           dataBase64?: string;
         };
         const filename = String(body.filename || "upload");
-        const mimeType = String(body.mimeType || "application/octet-stream");
+        let mimeType = String(body.mimeType || "application/octet-stream");
         const dataBase64 = String(body.dataBase64 || "");
 
-        if (
-          !ALLOWED_MIME_PREFIXES.some((prefix) => mimeType.startsWith(prefix))
-        ) {
+        if (body.attachment === true) {
+          mimeType = mimeType === "application/pdf" || /\.pdf$/i.test(filename)
+            ? "application/pdf"
+            : "application/octet-stream";
+        } else if (!mimeType.startsWith("image/") && mimeType !== "application/pdf") {
           return jsonResponse(
             request,
             { error: "Only image files and PDF documents are supported." },
@@ -446,7 +448,8 @@ export default {
             "Content-Type": asset.mimeType,
             "Content-Length": String(asset.sizeBytes),
             "Cache-Control": "public, max-age=31536000, immutable",
-            "Content-Disposition": `inline; filename="${asset.filename.replace(/"/g, "")}"`,
+            "Content-Disposition": `${asset.mimeType === "application/octet-stream" ? "attachment" : "inline"}; filename="${asset.filename.replace(/"/g, "")}"`,
+            "X-Content-Type-Options": "nosniff",
           },
         });
       }

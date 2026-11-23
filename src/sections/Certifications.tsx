@@ -55,6 +55,17 @@ export default function Certifications() {
                   <h3>{item.title}</h3>
                   <p>{item.organization}</p>
                   <span className="credential-date">{item.date}</span>
+                  {Boolean(item.attachments?.length) && (
+                    <ul className="mt-3" aria-label="Certificate files">
+                      {item.attachments?.map((file) => (
+                        <li key={file.url}>
+                          <a className="eligibility-file-link" href={resolveMediaUrl(file.url)} target="_blank" rel="noopener noreferrer">
+                            {file.filename}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </article>
             </Reveal>

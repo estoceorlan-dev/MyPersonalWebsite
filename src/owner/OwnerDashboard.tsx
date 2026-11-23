@@ -247,6 +247,7 @@ export default function OwnerDashboard({
     event: ChangeEvent<HTMLInputElement>,
     fieldKey: string,
     onUploaded: (url: string, filename: string) => void,
+    attachment = false,
   ) {
     const file = event.target.files?.[0];
     event.target.value = "";
@@ -255,7 +256,7 @@ export default function OwnerDashboard({
     setUploadingField(fieldKey);
     setStatusMessage(null);
     try {
-      const uploaded = await uploadMedia(file, token);
+      const uploaded = await uploadMedia(file, token, attachment);
       onUploaded(uploaded.url, uploaded.filename);
       setStatusMessage({
         type: "success",
@@ -2690,6 +2691,44 @@ export default function OwnerDashboard({
                               Remove picture
                             </button>
                           )}
+                        </div>
+                        <div className="form-field mt-4">
+                          <label htmlFor={`eligibility-file-${idx}`}>Attach a PDF or other file</label>
+                          <input
+                            id={`eligibility-file-${idx}`}
+                            type="file"
+                            aria-describedby={`eligibility-file-hint-${idx}`}
+                            disabled={editorControls.busy}
+                            onChange={(event) => {
+                              void handleFileUpload(event, `eligibility-file-${idx}`, (url, filename) => {
+                                updateDraft((d) => {
+                                  const entry = d.achievements[idx]!;
+                                  (entry.attachments ??= []).push({ url, filename });
+                                  return d;
+                                });
+                              }, true);
+                            }}
+                          />
+                          <span id={`eligibility-file-hint-${idx}`} className="muted">Up to 15 MB per file.</span>
+                          {uploadingField === `eligibility-file-${idx}` && <span role="status">Uploading file…</span>}
+                          {item.attachments?.map((file) => (
+                            <div className="owner-inline-actions" key={file.url}>
+                              <a className="eligibility-file-link" href={resolveMediaUrl(file.url)} target="_blank" rel="noopener noreferrer">{file.filename}</a>
+                              <button
+                                type="button"
+                                className="icon-button"
+                                aria-label={`Remove ${file.filename}`}
+                                disabled={editorControls.busy}
+                                onClick={() => updateDraft((d) => {
+                                  const entry = d.achievements[idx]!;
+                                  entry.attachments = entry.attachments?.filter((attachment) => attachment.url !== file.url);
+                                  return d;
+                                })}
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          ))}
                         </div>
                       </OwnerEditor>
                     ))}

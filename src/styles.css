@@ -3025,6 +3025,11 @@ textarea {
   border-radius: 10px;
   background: #faf9fc;
 }
+.eligibility-file-link {
+  overflow-wrap: anywhere;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
 .eligibility-picture {
   display: block;
   width: 12rem;

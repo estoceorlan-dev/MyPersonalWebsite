@@ -177,6 +177,39 @@ test("publishes, replaces, and removes an eligibility certificate picture", asyn
   }
 });
 
+test("publishes PDF and file attachments and removes them individually", async ({ page }) => {
+  const title = "Civil Service Professional Eligibility";
+  const files = [
+    { name: "eligibility.pdf", mimeType: "application/pdf" },
+    { name: "supporting-notes.docx", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" },
+  ];
+  async function openEntry() {
+    await page.goto("/owner");
+    await page.getByRole("button", { name: "06 Credentials & Certs" }).click();
+    await page.getByRole("button", { name: `Edit ${title}`, exact: true }).click();
+    return page.getByRole("dialog");
+  }
+  const editor = await openEntry();
+  for (const file of files) {
+    const request = page.waitForRequest((req) => req.url().endsWith("/api/media") && req.method() === "POST");
+    await editor.getByLabel("Attach a PDF or other file").setInputFiles({ ...file, buffer: Buffer.from("test document") });
+    expect((await request).postDataJSON().attachment).toBe(true);
+    await expect(editor.getByRole("link", { name: file.name })).toBeVisible();
+  }
+  await save(page, editor);
+  await page.goto("/#certifications");
+  const links = page.getByRole("list", { name: "Certificate files" });
+  for (const file of files) {
+    await expect(links.getByRole("link", { name: file.name })).toHaveAttribute("href", `/test-upload/${file.name}`);
+  }
+  await openEntry();
+  await editor.getByRole("button", { name: "Remove eligibility.pdf" }).click();
+  await save(page, editor);
+  await page.goto("/#certifications");
+  await expect(links.getByRole("link", { name: "supporting-notes.docx" })).toBeVisible();
+  await expect(links.getByRole("link", { name: "eligibility.pdf" })).toHaveCount(0);
+});
+
 test("keeps account credential updates separate from publishing portfolio content", async ({ page }) => {
   const contentWrites: string[] = [];
   page.on("request", (request) => {

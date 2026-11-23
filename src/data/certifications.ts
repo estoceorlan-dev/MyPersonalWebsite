@@ -15,6 +15,7 @@ export type Achievement = {
   date: string;
   description: string;
   image?: string;
+  attachments?: { url: string; filename: string }[];
 };
 // Eligibility is separate from course certifications, as in the resume.
 // Previews and PDFs live in public/certificates (sources: assets/certificates).

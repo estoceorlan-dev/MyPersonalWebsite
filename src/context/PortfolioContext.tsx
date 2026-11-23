@@ -250,6 +250,7 @@ type PortfolioContextValue = {
   uploadMedia: (
     file: File,
     token: string,
+    attachment?: boolean,
   ) => Promise<{ id: string; url: string; filename: string; mimeType: string }>;
   fetchAnalytics: (
     token: string,
@@ -414,7 +415,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     [applyContent],
   );
 
-  const uploadMedia = useCallback(async (file: File, token: string) => {
+  const uploadMedia = useCallback(async (file: File, token: string, attachment = false) => {
     const base64 = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => {
@@ -435,6 +436,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
       body: JSON.stringify({
         filename: file.name,
         mimeType: file.type || "application/octet-stream",
+        attachment,
         dataBase64: base64,
       }),
     });
